@@ -23,7 +23,7 @@ export default function PostPreviewModal({ open, data, coverSrc, onClose }: Post
       width={760}
     >
       <article className="mx-auto max-w-2xl py-2">
-        {cover && <Image src={cover} alt={data?.title || 'Ảnh bìa'} className="mb-4 w-full rounded-xl object-cover" />}
+        {cover && <Image src={cover} alt={data?.title || 'Ảnh bìa'} className="mb-4 w-full rounded-lg object-cover" />}
         <Typography.Title level={2}>{data?.title || 'Tiêu đề bài viết'}</Typography.Title>
         {data?.summary && <Typography.Paragraph type="secondary">{data.summary}</Typography.Paragraph>}
         {data?.video_url && <Typography.Link href={data.video_url} target="_blank" rel="noreferrer">Mở video đính kèm</Typography.Link>}

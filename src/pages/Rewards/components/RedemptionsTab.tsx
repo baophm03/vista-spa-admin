@@ -154,7 +154,7 @@ export default function RedemptionsTab() {
           />
       </div>
       {redemptionsQuery.isError && (
-        <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
+        <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
       )}
       {!loading && (!redemptionsQuery.isError || rows.length > 0) && <Table<RewardRedemptionRow>
         className="desktop-only max-lg:hidden!"

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import { Alert, Button, Input, Select, Skeleton, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, PlayCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -211,9 +211,8 @@ export default function MySessions() {
       Buổi của tôi
     </PageTitle>
     <div className="my-session-toolbar toolbar-row mb-3 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_180px_190px] lg:grid-cols-[minmax(220px,320px)_180px_190px] lg:justify-end">
-      <Input
+      <Input.Search
         allowClear
-        prefix={<SearchOutlined />}
         className="col-span-2 min-w-0 md:col-span-1"
         aria-label="Tìm buổi điều trị"
         placeholder="Tìm khách, SĐT, mã KH hoặc gói"
@@ -236,7 +235,7 @@ export default function MySessions() {
       />
     </div>
     {listError && <Alert
-      className="mb-4! rounded-xl! max-lg:mb-3! max-lg:rounded-lg!"
+      className="mb-4! rounded-lg! max-lg:mb-3! "
       type="error"
       showIcon
       title="Không tải được danh sách buổi"

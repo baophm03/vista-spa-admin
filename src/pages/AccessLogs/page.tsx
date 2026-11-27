@@ -1,7 +1,7 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, DatePicker, Descriptions, Form, Input, Modal, Select, Space, Spin, Tabs, Tag, Typography, message } from 'antd'
-import { FilterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { FilterOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
@@ -333,9 +333,8 @@ export default function AccessLogs() {
       />
 
       <div className="toolbar-row mb-4 flex flex-wrap items-center gap-2 max-lg:mb-3 max-md:grid">
-        <Input
+        <Input.Search
           allowClear
-          prefix={<SearchOutlined />}
           placeholder="Tìm nhật ký..."
           value={search}
           onChange={(event) => { setSearch(event.target.value); setPage(1) }}
@@ -429,7 +428,7 @@ export default function AccessLogs() {
 
       {loadError && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải được nhật ký hệ thống"

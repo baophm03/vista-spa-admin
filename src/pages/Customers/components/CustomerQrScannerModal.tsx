@@ -70,7 +70,7 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
       <Space direction="vertical" size={14} style={{ width: '100%' }}>
         <Typography.Text type="secondary">Bật camera để quét mã, hoặc nhập token QR nếu camera không dùng được.</Typography.Text>
         {cameraError && <Alert type="warning" showIcon message={cameraError} />}
-        <div style={{ display: scanning ? 'block' : 'none', overflow: 'hidden', borderRadius: 12, background: '#121212' }}>
+        <div style={{ display: scanning ? 'block' : 'none', overflow: 'hidden', borderRadius: 8, background: '#121212' }}>
           <video ref={videoRef} muted playsInline style={{ display: 'block', width: '100%', maxHeight: 300, objectFit: 'cover' }} />
         </div>
         <Space wrap className="md:max-lg:w-full md:max-lg:justify-end">

@@ -21,8 +21,11 @@
   width: 220px;
 }
 
-.voucher-customer-search {
-  max-width: 300px;
+@media (min-width: 1200px) {
+  .voucher-toolbar-search .voucher-search.voucher-customer-search {
+    width: 320px;
+    max-width: min(320px, 40vw);
+  }
 }
 
 .voucher-tablet-actions {

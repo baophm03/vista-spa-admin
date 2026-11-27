@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import type { TableColumnsType } from 'antd'
-import { AppstoreOutlined, BarsOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FilterOutlined, PlayCircleFilled, PlusOutlined, SearchOutlined, SendOutlined, StarFilled, StarOutlined, UndoOutlined, VideoCameraOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, BarsOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FilterOutlined, PlayCircleFilled, PlusOutlined, SendOutlined, StarFilled, StarOutlined, UndoOutlined, VideoCameraOutlined } from '@ant-design/icons'
 import { useAbility } from '@casl/react'
 import { Alert, App, Avatar, Button, Empty, Form, Input, InputNumber, Modal, Popover, Segmented, Select, Spin, Switch, Tabs, Tag, Typography } from 'antd'
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -448,7 +448,7 @@ export default function ContentVideos() {
             children: (
               <>
                 <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                  <Input aria-label="Tìm tiêu đề video" allowClear prefix={<SearchOutlined />} placeholder="Tìm tiêu đề video" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} className="col-span-full w-full! md:w-[220px]!" />
+                  <Input.Search aria-label="Tìm tiêu đề video" allowClear placeholder="Tìm tiêu đề video" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} className="col-span-full w-full! md:w-[220px]!" />
                   <Popover trigger="click" placement="bottomRight" title="Bộ lọc video" content={
                     <div className="grid w-[260px] max-w-[calc(100vw-56px)] gap-3">
                   <Select
@@ -528,7 +528,7 @@ export default function ContentVideos() {
                 ) : (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 xl:gap-4">
                     {visibleVideos.map((video) => (
-                      <div key={video.id} className="flex min-w-0 flex-col overflow-hidden rounded-xl max-lg:rounded-lg border border-(--brand-border-soft) bg-white shadow-sm">
+                      <div key={video.id} className="flex min-w-0 flex-col overflow-hidden rounded-lg  border border-(--brand-border-soft) bg-white shadow-sm">
                         <button
                           type="button"
                           aria-label={`Xem video ${video.title}`}
@@ -631,7 +631,7 @@ export default function ContentVideos() {
                 <Form.Item name="categoryId" label="Danh mục" rules={[{ required: true, message: 'Chọn danh mục video' }]}>
                   <Select placeholder="Chọn danh mục" options={categoryOptions} />
                 </Form.Item>
-                <fieldset className="min-w-0 rounded-xl border border-(--brand-border-soft) px-3 pb-2">
+                <fieldset className="min-w-0 rounded-lg border border-(--brand-border-soft) px-3 pb-2">
                   <legend className="w-auto px-1 text-sm font-semibold">Nguồn video</legend>
                 <Form.Item name="file" extra="MP4 hoặc WebM, tối đa 100 MB" rules={[{
                   validator: (_, file: File | null | undefined) =>

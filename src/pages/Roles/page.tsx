@@ -185,7 +185,7 @@ export default function Roles() {
 
       {loadError && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải đủ danh sách vai trò và quyền"
@@ -195,7 +195,7 @@ export default function Roles() {
       )}
       {!loadError && permsEmpty && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="warning"
           showIcon
           message="Danh mục quyền đang trống"
@@ -209,10 +209,10 @@ export default function Roles() {
             return (
               <div
                 key={role.id}
-                className="flex flex-col justify-between gap-4 rounded-[20px] max-lg:rounded-lg border border-[var(--brand-border-soft)] bg-white p-5 max-lg:p-3 max-lg:gap-3 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start md:flex-col md:items-stretch"
+                className="flex flex-col justify-between gap-4 rounded-lg  border border-[var(--brand-border-soft)] bg-white p-5 max-lg:p-3 max-lg:gap-3 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start md:flex-col md:items-stretch"
               >
                 <div className="flex min-w-0 items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl max-lg:rounded-lg bg-[rgba(var(--brand-rgb),0.1)]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-[rgba(var(--brand-rgb),0.1)]">
                     <SafetyOutlined className="text-xl text-[var(--brand-primary)]" />
                   </div>
                   <div className='min-w-0'>
@@ -240,7 +240,7 @@ export default function Roles() {
                       type="text"
                       size="small"
                       icon={<EditOutlined />}
-                      className="rounded-xl text-[var(--brand-primary)] hover:bg-[rgba(var(--brand-rgb),0.08)]!"
+                      className="rounded-lg text-[var(--brand-primary)] hover:bg-[rgba(var(--brand-rgb),0.08)]!"
                       onClick={() => openEdit(role)}
                     >
                       Sửa
@@ -249,7 +249,7 @@ export default function Roles() {
                       type="text"
                       size="small"
                       icon={<SafetyCertificateOutlined />}
-                      className="rounded-xl text-emerald-700 hover:bg-emerald-50!"
+                      className="rounded-lg text-emerald-700 hover:bg-emerald-50!"
                       onClick={() => openPermissions(role)}
                     >
                       Phân quyền
@@ -261,7 +261,7 @@ export default function Roles() {
           })}
 
           {roles.length === 0 && !loading && !loadError && (
-            <div className="rounded-[20px] max-lg:rounded-lg border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-10 text-center text-slate-500">
+            <div className="rounded-lg  border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-10 text-center text-slate-500">
               Chưa có vai trò nào
             </div>
           )}

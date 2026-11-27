@@ -118,7 +118,7 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
 
   return (
     <Card className="mt-5! max-lg:mt-3!" title={title} extra={statusTag(row)}>
-      <Alert className="mb-4" type="info" showIcon message="Kiểm tra chỉ truy vấn quyền và hạn mức; không gửi tin và không phát sinh phí." />
+      <Alert className="mb-4! max-lg:mb-3!" type="info" showIcon message="Kiểm tra chỉ truy vấn quyền và hạn mức; không gửi tin và không phát sinh phí." />
       <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setTestResult(null)}>
         <Row gutter={16}>
           <Col xs={24} md={12}>
@@ -161,7 +161,7 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
           <div><Typography.Text strong>Cho phép dùng {isZbs ? 'ZBS' : 'Zalo OA'}</Typography.Text><br /><Typography.Text type="secondary">Chỉ bật được sau khi kiểm tra kết nối thành công.</Typography.Text></div>
           <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit || clearSecret} />
         </div>
-        {testResult && <Alert className="mb-4" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
+        {testResult && <Alert className="mb-4! max-lg:mb-3!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
         <div className="flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
           <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit || clearSecret} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
           <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
@@ -255,8 +255,8 @@ export default function IntegrationSettings() {
       {({ isAllowed: canEdit }) => (
         <MobileUI>
           <PageTitle subtitle="Kết nối tích hợp bên ngoài (Zalo, email...)">Tích hợp dịch vụ</PageTitle>
-          {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
-          {query.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
+          {!canEdit && <Alert className="mb-4! max-lg:mb-3!" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
+          {query.isError && <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
           <Spin spinning={query.isLoading}>
             <Row gutter={[{ xs: 12, lg: 20 }, { xs: 12, lg: 20 }]}>
               <Col xs={24} xl={14}>
@@ -287,7 +287,7 @@ export default function IntegrationSettings() {
                       <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại trước khi hoạt động.</Typography.Text></div>
                       <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
                     </div>
-                    {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
+                    {testResult && <Alert className="mb-4! max-lg:mb-3!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
                     <div className="flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
                       <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
                       <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>

@@ -284,7 +284,7 @@ export default function HealthRecords() {
       </div>
 
       {listError && (
-        <Alert type="error" showIcon className="mb-4! rounded-xl! max-lg:mb-3! max-lg:rounded-lg!"
+        <Alert type="error" showIcon className="mb-4! rounded-lg! max-lg:mb-3! "
           title="Không tải được hồ sơ sức khỏe" description={listError}
           action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />
       )}

@@ -15,7 +15,7 @@ export default function MobileStatCards({ items, loading = false }: { items: Sta
             style={{
               background: '#fff',
               border: '1px solid var(--brand-border-soft)',
-              borderRadius: 12,
+              borderRadius: 8,
               padding: '8px 10px',
               minHeight: 64,
             }}

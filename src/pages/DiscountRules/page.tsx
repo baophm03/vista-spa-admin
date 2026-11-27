@@ -348,7 +348,7 @@ export default function DiscountRules() {
             </PageTitle>
             {rulesQuery.isError && (
               <Alert
-                className="mb-4" type="error" showIcon
+                className="mb-4! max-lg:mb-3!" type="error" showIcon
                 title="Không tải được quy tắc giảm giá"
                 description={errorMessage(rulesQuery.error)}
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}

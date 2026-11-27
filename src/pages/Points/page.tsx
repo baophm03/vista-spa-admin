@@ -334,7 +334,7 @@ export default function Points() {
         Điểm & Hạng thành viên
       </PageTitle>
 
-      <div className="rounded-lg p-3 md:px-6 md:pt-6 md:pb-7 lg:mt-2 lg:rounded-[20px]" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)' }}>
+      <div className="rounded-lg p-3 md:px-6 md:pt-6 md:pb-7 lg:mt-2 lg:rounded-lg" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)' }}>
         <button
           type="button"
           aria-expanded={ranksExpanded}
@@ -362,7 +362,7 @@ export default function Points() {
           </Can>
         </div>
 
-        <Row gutter={[16, 16]} className="mt-3 md:mt-5">
+        <Row gutter={[16, 16]} className="mt-3! md:mt-5!">
           {ranksQuery.isLoading && [0, 1, 2].map((index) => (
             <Col xs={24} md={12} xl={8} key={index}>
               <div className="mobile-card"><Skeleton active paragraph={{ rows: 2 }} /></div>
@@ -469,7 +469,7 @@ export default function Points() {
       </div>
 
       <Tabs
-        className="mt-3 lg:mt-4"
+        className="mt-3! lg:mt-4!"
         activeKey={activeTab}
         onChange={setActiveTab}
         items={[

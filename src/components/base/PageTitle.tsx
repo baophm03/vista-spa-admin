@@ -15,7 +15,7 @@ export default function PageTitle({ children, subtitle, summary, left, right, cl
           {children}
         </Typography.Title>
         {subtitle && (
-          <Typography.Text type="secondary" className="mt-1 block text-sm!">
+          <Typography.Text type="secondary" className="mt-1! block text-sm!">
             {subtitle}
           </Typography.Text>
         )}

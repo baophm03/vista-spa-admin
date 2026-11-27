@@ -2,7 +2,7 @@ import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Image, Input, Modal, Select, Space, Tabs, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
@@ -361,10 +361,9 @@ export default function ContentPosts() {
               <>
                 {/* Toolbar của tab — đặt dưới thanh tab */}
                 <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                  <Input
+                  <Input.Search
                     allowClear
                     aria-label="Tìm tiêu đề bài viết"
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tiêu đề"
                     className="col-span-full w-full! md:w-[220px]!"
                     value={postSearchInput}

@@ -105,7 +105,7 @@ export default function HealthRecordModal({
             </Form.Item>
             <Collapse
               ghost
-              style={{ marginTop: 8, background: '#F7FAF8', borderRadius: 12, padding: '0 12px' }}
+              style={{ marginTop: 8, background: '#F7FAF8', borderRadius: 8, padding: '0 12px' }}
               items={[{
                 key: 'treatment-details',
                 forceRender: true,

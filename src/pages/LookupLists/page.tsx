@@ -153,8 +153,8 @@ export default function LookupLists() {
               )}
             >Danh mục chọn</PageTitle>
 
-            {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
-            {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
+            {!canRead && !loading && <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
+            {error && <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
 
             <ResponsiveTable<LookupList>
               rowKey="id"

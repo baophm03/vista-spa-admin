@@ -43,7 +43,7 @@ type AppointmentRow = Appointment & {
 }
 
 const tooltipStyle = {
-  borderRadius: 12,
+  borderRadius: 8,
   border: '1px solid var(--brand-border)',
   fontSize: 13,
 }

@@ -381,7 +381,7 @@ export default function CommissionEntriesPanel() {
           <Alert
             type="warning"
             showIcon
-            className="items-start! rounded-xl! max-lg:rounded-lg! px-3! py-2.5!"
+            className="items-start! rounded-lg! px-3! py-2.5!"
             styles={{ icon: { marginTop: 3 } }}
             message={
               <span className="block text-sm leading-snug">

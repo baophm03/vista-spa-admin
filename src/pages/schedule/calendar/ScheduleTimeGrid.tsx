@@ -392,7 +392,7 @@ export default function ScheduleTimeGrid<Block extends GridBlock>({
             data-detail-popover
             style={{ position: 'fixed', zIndex: 1041, left: detailPos.x, top: detailPos.y, width: 330 }}
           >
-            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--brand-border-soft)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)', maxHeight: `calc(100dvh - ${detailPos.y + 12}px)`, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+            <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--brand-border-soft)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)', maxHeight: `calc(100dvh - ${detailPos.y + 12}px)`, overflowY: 'auto', overscrollBehavior: 'contain' }}>
               {renderBlockDetail?.(detailBlock)}
             </div>
           </div>,

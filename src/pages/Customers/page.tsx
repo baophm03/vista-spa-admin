@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import { Button, Form, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, FilterOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, FilterOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -385,13 +385,12 @@ export default function Customers() {
         const gridCols = !odd && profileAccess.canManage ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]' : 'grid-cols-2'
         return (
           <div className="customers-card-toolbar toolbar-row">
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined />}
               placeholder="Tìm tên, SĐT, email, mã KH"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              onPressEnter={() => { setKeyword(searchText.trim()); setPage(1) }}
+              onSearch={() => { setKeyword(searchText.trim()); setPage(1) }}
               aria-label="Tìm khách hàng"
             />
             <div className={`customers-card-tools grid gap-2 md:flex ${gridCols}`}>

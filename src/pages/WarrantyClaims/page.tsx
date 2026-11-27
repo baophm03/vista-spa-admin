@@ -190,7 +190,7 @@ export default function WarrantyClaims() {
       </PageTitle>
       {claimsQuery.isError && (
         <Alert
-          className="mb-4 wrap-anywhere" type="error" showIcon title="Không tải được danh sách bảo hành"
+          className="mb-4! wrap-anywhere max-lg:mb-3!" type="error" showIcon title="Không tải được danh sách bảo hành"
           description={<>
             {errorMessage(claimsQuery.error)}
             <div className="mt-2"><Button size="small" loading={claimsQuery.isFetching} onClick={() => void claimsQuery.refetch()}>Thử lại</Button></div>

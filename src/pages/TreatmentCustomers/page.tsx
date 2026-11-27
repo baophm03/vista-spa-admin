@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Col, Form, Grid, Input, Progress, Row, Select, Skeleton, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, FilterOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, FilterOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -870,9 +870,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
       {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       {isMobile && (
         <div className="toolbar-row mb-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-          <Input
+          <Input.Search
             allowClear
-            prefix={<SearchOutlined />}
             placeholder="Tìm tên hoặc SĐT khách hàng"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}

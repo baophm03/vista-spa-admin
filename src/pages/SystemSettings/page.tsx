@@ -278,8 +278,8 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
       >
         Cài đặt hệ thống
       </PageTitle>
-      {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình; cần quyền cập nhật để chỉnh sửa." />}
-      <Card className="mb-4 max-lg:mb-3">
+      {!canEdit && <Alert className="mb-4! max-lg:mb-3!" type="info" showIcon message="Bạn có quyền xem cấu hình; cần quyền cập nhật để chỉnh sửa." />}
+      <Card className="mb-4! max-lg:mb-3!">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Typography.Text strong>Phạm vi cấu hình</Typography.Text>

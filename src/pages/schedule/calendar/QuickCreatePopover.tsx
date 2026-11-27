@@ -69,7 +69,7 @@ export default function QuickCreatePopover({
   const showBranchSelect = canManage && !branchFilter && branches.length > 1
 
   return (
-    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--brand-border-soft)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+    <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--brand-border-soft)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px 0' }}>
         <Typography.Text strong style={{ fontSize: 16, color: 'var(--brand-secondary-ink)' }}>Tạo ca làm</Typography.Text>
         <Button aria-label="Đóng" type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />

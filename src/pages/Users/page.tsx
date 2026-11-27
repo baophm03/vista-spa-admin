@@ -8,7 +8,6 @@ import {
   LockOutlined,
   PlusOutlined,
   ProfileOutlined,
-  SearchOutlined,
   UndoOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -298,9 +297,8 @@ export default function Users() {
         subtitle="Quản lý thông tin và vai trò của nhân viên"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo tên, email, SĐT"
               className="w-full! max-md:col-span-full md:w-[260px]!"
               value={searchInput}
@@ -308,7 +306,7 @@ export default function Users() {
                 setSearchInput(e.target.value)
                 if (!e.target.value) applySearch('')
               }}
-              onPressEnter={() => applySearch(searchInput)}
+              onSearch={() => applySearch(searchInput)}
             />
             {/* Mobile: [Cơ sở][+] cùng 1 hàng (docs 6.2.1); từ tablet tan vào hàng toolbar */}
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">

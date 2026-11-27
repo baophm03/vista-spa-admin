@@ -135,7 +135,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
         <Typography.Text type="secondary">Mã mục không đổi sau khi tạo. Mục đã dùng chỉ có thể ẩn.</Typography.Text>
         {canUpdate && <Button type="primary" className="keep-label max-md:w-full" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm mục</Button>}
       </div>
-      {error && <Alert className="mb-4" type="error" showIcon message="Không tải được mục trong danh mục" description={error} action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />}
+      {error && <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được mục trong danh mục" description={error} action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />}
       <ResponsiveTable<LookupItemWithColor>
         rowKey="id"
         size="small"

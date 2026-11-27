@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message, Skeleton } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, FilterOutlined } from '@ant-design/icons'
 import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -406,9 +406,8 @@ export default function Branches() {
         subtitle="Danh sách cơ sở spa trong hệ thống"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
               className="w-full! max-md:col-span-full md:w-[260px]!"
               value={searchText}
@@ -416,7 +415,7 @@ export default function Branches() {
                 setSearchText(event.target.value)
                 if (!event.target.value) applySearch('')
               }}
-              onPressEnter={() => applySearch(searchText)}
+              onSearch={() => applySearch(searchText)}
             />
             {/* Mobile: [Bộ lọc][+] cùng 1 hàng (docs 6.2.1); từ tablet tan vào hàng toolbar */}
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
@@ -458,7 +457,7 @@ export default function Branches() {
 
       {branchesQuery.isError && (
         <Alert
-          className="desktop-only mb-4"
+          className="desktop-only mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải được danh sách cơ sở"

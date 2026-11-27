@@ -107,7 +107,7 @@ export default function TreatmentDetailModal({
             </aside>
           ) : (
           <aside
-            className={`flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] ${isMobile ? 'p-3' : 'p-[18px]'} lg:sticky lg:top-0 lg:max-h-[calc(100vh-140px)] lg:max-w-[330px] lg:overflow-y-auto`}
+            className={`flex-[1_1_260px] rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] ${isMobile ? 'p-3' : 'p-[18px]'} lg:sticky lg:top-0 lg:max-h-[calc(100vh-140px)] lg:max-w-[330px] lg:overflow-y-auto`}
           >
             <Typography.Text type="secondary" className={isMobile ? 'text-[11px] font-extrabold tracking-[1.2px]' : 'text-xs font-extrabold tracking-[1.2px]'}>
               {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN ĐỜI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
@@ -129,7 +129,7 @@ export default function TreatmentDetailModal({
                 </div>
               </>
             ) : (
-              <Typography.Text type="secondary" className="mt-1 block">Không giới hạn số buổi</Typography.Text>
+              <Typography.Text type="secondary" className="mt-1! block">Không giới hạn số buổi</Typography.Text>
             )}
             <Divider className={isMobile ? 'my-2!' : 'my-3!'} />
             <div className={`grid ${isMobile ? 'gap-1.5 text-[13px]' : 'gap-[9px] text-[13.5px]'}`}>
@@ -273,7 +273,7 @@ export default function TreatmentDetailModal({
             ) : (
               <>
                 {/* Desktop: bảng trong khung viền (giữ giao diện tab cũ); MobileCards tự ẩn trên desktop */}
-                <div className="hidden overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white md:block">
+                <div className="hidden overflow-hidden rounded-lg border border-[var(--brand-border)] bg-white md:block">
                   <SubHead>Lịch sử thanh toán</SubHead>
                   <Table<PaymentRow>
                     rowKey="id"

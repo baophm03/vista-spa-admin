@@ -300,7 +300,7 @@ export default function RewardCatalogTab() {
         </Can>
       </div>
       {rewardsQuery.isError && (
-        <Alert className="mb-4" type="error" showIcon message="Không tải được quà tặng" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
+        <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được quà tặng" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
       )}
       {!loading && (!rewardsQuery.isError || rewards.length > 0) && <Table<RewardRow>
         className="desktop-only max-lg:hidden!"

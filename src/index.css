@@ -14,7 +14,7 @@ body {
 /* ===== Bảng — khung hairline + shadow khuếch tán theo màu brand ===== */
 .ant-table-wrapper {
   border: 1px solid var(--brand-border);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: #FFFFFF;
   box-shadow:
@@ -120,7 +120,7 @@ body {
   gap: 16px;
   background: #FFFFFF;
   border: 1px solid var(--brand-border-soft, #ECEFEA);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 22px 20px;
   box-shadow:
     0 1px 2px rgba(var(--brand-dark-rgb), 0.04),
@@ -153,7 +153,7 @@ body {
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 21px;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.65);
@@ -215,7 +215,7 @@ body {
   align-items: flex-start;
   padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--notice-icon) 15%, var(--notice-bg));
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--notice-bg);
   color: var(--notice-ink);
   line-height: 1.5;
@@ -358,7 +358,7 @@ h4.ant-typography {
     width: 40px;
     height: 40px;
     overflow: hidden;
-    border-radius: 9px;
+    border-radius: 8px;
     background: var(--brand-bg);
   }
 
@@ -576,7 +576,7 @@ h4.ant-typography {
     align-items: center;
   }
   .mobile-segmented .ant-segmented-item {
-    border-radius: 9px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
     display: inline-flex;
@@ -589,12 +589,12 @@ h4.ant-typography {
   }
   .mobile-segmented .ant-segmented-thumb {
     background: #f2e5f4;
-    border-radius: 9px;
+    border-radius: 8px;
   }
   /* Select trong hàng lọc mobile cao 44 bo 12 theo Figma */
   .ant-select.mobile-filter-select .ant-select-selector {
     height: 44px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .mobile-only {
@@ -612,13 +612,13 @@ h4.ant-typography {
     min-height: 76px;
     gap: 8px;
     padding: 10px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .stat-cards .stat-card-disc {
     width: 32px;
     height: 32px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 15px;
   }
 
@@ -689,7 +689,7 @@ h4.ant-typography {
    padding 12, head có divider, cột label 107px căn trái. */
 .mobile-card {
   border: 1px solid var(--brand-border-soft);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
   padding: 12px;
 }
@@ -758,7 +758,7 @@ h4.ant-typography {
   min-height: 36px;
   padding-inline: 10px;
   justify-content: space-between;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: none;
   font-size: 14px;
   font-weight: 400;
@@ -785,14 +785,9 @@ h4.ant-typography {
   border-bottom-color: var(--brand-border-soft);
 }
 
-/* ===== Nút chính — shadow mềm cùng màu, bấm có lực ===== */
-.ant-btn-primary {
-  box-shadow: 0 4px 14px -4px rgba(var(--brand-rgb), 0.5);
-}
-
+/* ===== Nút chính — phẳng, không bóng đổ (docs/mobile-design-guide.md); bấm vẫn có lực ===== */
 .ant-btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 8px -4px rgba(var(--brand-rgb), 0.4);
 }
 
 /* Item buổi điều trị — hover cả hàng */

@@ -31,7 +31,7 @@
 .product-catalog-list .mobile-card:has(.product-card) {
   min-width: 0;
   padding: 6px;
-  border-radius: 16px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -65,7 +65,7 @@
   place-items: center;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--brand-bg);
   color: #736b7c;
@@ -195,7 +195,7 @@
   place-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 9px;
+  border-radius: 8px;
   background: var(--brand-tint);
   color: var(--brand-dark);
 }

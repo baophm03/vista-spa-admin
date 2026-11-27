@@ -102,7 +102,7 @@ export default function NotificationTemplates() {
           {isAdmin && <Button size="small" icon={<EditOutlined />} onClick={() => openEditor(template)}>Sửa</Button>}
         </div>
         <Typography.Text strong className="block">{previewTemplate(template.title) || `Mẫu ${label}`}</Typography.Text>
-        <Typography.Paragraph className="mb-0 mt-1" type="secondary" ellipsis={{ rows: 2, tooltip: previewTemplate(template.body) }}>
+        <Typography.Paragraph className="mb-0! mt-1!" type="secondary" ellipsis={{ rows: 2, tooltip: previewTemplate(template.body) }}>
           {previewTemplate(template.body) || 'Chưa có nội dung'}
         </Typography.Paragraph>
         {!available && <Typography.Text type="secondary" className="text-xs">Cần kết nối Zalo OA</Typography.Text>}
@@ -128,7 +128,7 @@ export default function NotificationTemplates() {
 
       {templatesQuery.isError && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           title="Không tải được danh sách mẫu thông báo"

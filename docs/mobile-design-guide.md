@@ -26,11 +26,10 @@ File tham khảo:
    - **Không** chỉnh chiều cao control bằng CSS `height`/`min-height` (antd v6 Select tính chiều cao từ padding, ép bằng CSS sẽ lệch chữ).
 2. Toolbar trong tab dùng `ToolbarRow` (đã có class `toolbar-row`); toolbar tự viết thì thêm class `toolbar-row`.
 3. Nút cần giữ chữ trên mobile (<768px) thêm class `keep-label` (mặc định nút có icon chỉ còn icon).
-4. Class Tailwind bo góc riêng (`rounded-xl`, `rounded-[10px]`…) không bị CSS chung đè → thêm `max-lg:rounded-lg`
-   (hoặc đổi thẳng nếu component chỉ dùng cho mobile).
+4. Bo góc tự viết luôn là 8px ở mọi bề rộng (`rounded-lg`) — xem mục 3.
 
 Đã áp dụng: **toàn bộ trang trong admin, trừ Dashboard** (bọc ở layout + chỉnh toolbar/bo góc từng trang theo mục 6.2.1).
-Khi thêm trang mới: chỉ cần làm toolbar theo 6.2.1, đổi bo góc tự viết sang `max-lg:rounded-lg`, không ép style tab.
+Khi thêm trang mới: chỉ cần làm toolbar theo 6.2.1, bo góc tự viết dùng `rounded-lg`, không ép style tab.
 
 **Trang dạng form / card (không có toolbar lọc):** nút hành động đôi trong card (vd. Kiểm tra kết nối | Lưu cấu hình)
 xếp `grid grid-cols-2` trên mobile, có icon + tên; card cách nhau 12px (`max-lg:mb-3`, `Row gutter={[{ xs: 12, lg: 20 }, …]}`);
@@ -67,21 +66,30 @@ nút lưu duy nhất trên tiêu đề trang full width có icon + tên (`keep-l
 | Header card → nội dung | 8px | `pb-2` + `pt-2`, có divider |
 | Giữa các dòng trong card | 7–8px | `.mobile-card-rows` / `gap-2` |
 
-## 3. Bo góc (Radius)
+> **Lưu ý margin trên component antd:** style của antd không nằm trong `@layer` nên luôn thắng utility Tailwind (`@layer utilities`),
+> và antd reset `margin: 0` cho Card, Alert, Steps, Tabs, Space… → `className="mb-4"` trên các component này **không có tác dụng**.
+> Luôn dùng dạng `!`: `mb-4! max-lg:mb-3!` (desktop 16px, mobile/tablet 12px). Thẻ HTML thường (`div`, `section`) thì không cần `!`.
 
-**Tất cả nội dung bên trong tab dùng chung 1 bo góc: 8px** (`rounded-lg`).
+## 3. Bo góc (Radius) — thống nhất mọi bề rộng
+
+**Toàn bộ admin (mobile, tablet, desktop) dùng chung 1 bo góc: 8px** (`rounded-lg`).
 
 | Thành phần | Radius |
 |---|---|
-| Card, card trạng thái (tải/lỗi/trống) | 8px |
-| Nút (chính, phụ, icon, xóa) | 8px |
-| Input, Select, DatePicker, Alert, Tag | 8px |
-| Ô chọn ngày, dòng ca, chip ngày | 8px |
-| Tab bar | Không bo (tab gạch chân) |
+| Card, card trạng thái, bảng (`.ant-table-wrapper`), stat card | 8px |
+| Nút, Input, Select, DatePicker, InputNumber, Alert, Tag, Segmented | 8px |
+| Modal, popover, khung lọc, ô chọn ngày, thẻ lịch hẹn, chip | 8px |
+| Menu sidebar (item đang chọn) | 8px |
+| Mục con nằm trong khung 8px (vd. item Segmented trong nền tím) | 6px |
+| Ngoại lệ giữ nguyên | hình tròn (`rounded-full`, `50%`, nút tròn `size-9` + `rounded-[18px]`), pill `999px`, màn quay thưởng `WheelSpinModal`, thẻ hạng `CustomerRankCard` |
 
-- Theme antd mặc định `borderRadius: 12` → không sửa theme/`.mobile-card` global; class `.mobile-ui` (`src/mobile-ui.css`) override về 8px trong phạm vi trang. Nhóm ghép (Input.Search, Space.Compact) chỉ bo 2 góc ngoài.
-
-- Popover/Modal render qua portal không nằm trong selector trên → thêm `rounded-lg!` trực tiếp vào nút.
+Nguồn:
+- **Theme antd** (`src/theme.ts`): `borderRadius` / `borderRadiusSM` / `borderRadiusLG` = 8; `Menu.itemBorderRadius`, `Card.borderRadiusLG`,
+  `Table.borderRadiusLG` = 8 (Menu sidebar trong `AdminLayout.tsx` cũng 8).
+- **`src/mobile-ui.css`**: rule bo góc 8px cho phần tử trong `.mobile-ui` áp ở mọi bề rộng (không còn nằm trong media query mobile).
+- **Code tự viết**: chỉ dùng `rounded-lg` / `border-radius: 8px` / `borderRadius: 8`. **Không** dùng `rounded-xl`, `rounded-2xl`,
+  `rounded-[10px…24px]`, `border-radius: 10–24px`; không cần cặp `rounded-xl max-lg:rounded-lg` nữa.
+- Nhóm ghép (Input.Search, Space.Compact) chỉ bo 2 góc ngoài.
 
 ## 4. Kích thước & chữ
 
@@ -89,9 +97,10 @@ nút lưu duy nhất trên tiêu đề trang full width có icon + tên (`keep-l
 |---|---|
 | **Mọi control trên toolbar** (nút, nút icon, ô tìm kiếm, select, date picker, segmented) | **Cùng cao 44px** — do token `<MobileUI>`, không tự đặt height. Nút icon vuông 44×44. Chiều rộng co giãn theo màn hình (grid/flex), chiều cao cố định |
 | Nút/control tự vẽ (không phải antd) | `h-11` (44px) để khớp |
-| **Icon trong toolbar** (kính lúp, mũi tên select, nút xóa ✕, icon lịch, icon trên nút: +, lọc, làm mới…) | **Cùng 14px** — `mobile-ui.css` tự đặt, không truyền `style={{ fontSize }}` riêng cho icon |
+| **Chiều cao control toolbar theo bề rộng** | Mobile + tablet (<1024px) **44px** (token `<MobileUI>`), desktop **40px** (`controlHeight` trong `src/theme.ts`). Mọi control trong cùng toolbar luôn bằng nhau — kể cả toolbar lịch (`CalendarToolbar`): **không** đặt `h-8/h-9/h-10`, `w-*` hay `style={{ fontSize }}` cho icon; nút icon dùng `shape="circle"`/vuông theo chiều cao chuẩn |
+| **Icon trong toolbar** (kính lúp, mũi tên select, nút xóa ✕, icon lịch, icon trên nút: +, lọc, làm mới…) | **Cùng 14px ở mọi bề rộng** — `mobile-ui.css` tự đặt, không truyền `style={{ fontSize }}` riêng cho icon |
 | Nút icon (mobile <768px) | Nút có icon + chữ tự thành nút vuông **44×44** chỉ còn icon; muốn giữ chữ thêm `keep-label` |
-| Bóng đổ nút | Không có trên mobile/tablet (`.mobile-ui .ant-btn { box-shadow: none }`) — bóng làm nút chính trông cao hơn input bên cạnh |
+| Bóng đổ nút | **Không có ở mọi bề rộng** — token `Button.primaryShadow/defaultShadow/dangerShadow: 'none'` trong `src/theme.ts`; không thêm `box-shadow` / `shadow-*` cho nút. Bóng làm nút chính trông cao hơn input bên cạnh |
 | Tab trong tab bar | Mặc định antd |
 | Ô chọn ngày | Cao 58px; nhãn thứ 11px; số ngày 16px semibold (`text-base leading-5`) |
 | Dòng ca trong card | Cao tối thiểu 44px, chữ 14px |
@@ -156,7 +165,12 @@ Mẫu chuẩn: **`/customer-data-config`** — dùng `<Tabs>` antd **mặc đị
   Bên dưới (chế độ Lịch): lưới giờ `AppointmentsMobileGrid` — header cùng màu nút chính `--brand-primary` (Giờ | T2 16/11 | …), cột Giờ 52px cố định,
   mỗi ngày 120px vuốt ngang (gợi ý "Vuốt ngang để xem các ngày còn lại"), mỗi giờ cao 56px; thẻ lịch hẹn nền màu trạng thái +
   viền trái màu nhấn, 3 dòng: trạng thái (10px) / tên khách (13px đậm) / SĐT (11px). Chế độ Ngày: 1 cột full width.
+  **Tablet + desktop dùng cùng bảng màu thẻ** (`AppointmentsCalendar`): nền `STATUS_COLORS[status].bg`, viền trái 3px `accent`,
+  chữ tối — màu chỉ theo trạng thái (không còn tô theo phân loại), chú giải chỉ còn nhóm Trạng thái.
   Chế độ Danh sách ẩn hẳn `Ngày | Tuần` (hàng 1 chỉ còn `Lịch | Danh sách` full width), tự xem theo tuần; danh sách lọc theo ngày/tuần đang chọn (chỉ mobile, desktop vẫn liệt kê toàn bộ).
+
+- **Ô tìm kiếm luôn là `Input.Search` của antd** (ô nhập + nút kính lúp ghép bên phải), có `allowClear`, `onSearch` để Enter / bấm nút đều tìm.
+  **Không** tự làm ô tìm bằng `<Input prefix={<SearchOutlined />}>`. Desktop: ô tìm + các select lọc nằm **cùng 1 hàng**, nút tạo ở cuối hàng.
 
 #### 6.2.1 Quy tắc xếp hàng toolbar (mobile < 768px)
 

@@ -64,10 +64,10 @@ function SidebarContent({
           <img
             src={`${links.imageEndpoint}${brand.logoUrl}`}
             alt={brand.name}
-            className="h-[34px] w-[34px] shrink-0 rounded-xl bg-[#F9EFF4] object-contain p-1"
+            className="h-[34px] w-[34px] shrink-0 rounded-lg bg-[#F9EFF4] object-contain p-1"
           />
         ) : (
-          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-[#F9EFF4] text-base font-bold text-[var(--brand-dark)]">
+          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-[#F9EFF4] text-base font-bold text-[var(--brand-dark)]">
             {brand.name.charAt(0).toUpperCase()}
           </div>
         )}

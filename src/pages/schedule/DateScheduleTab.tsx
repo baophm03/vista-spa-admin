@@ -731,7 +731,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         roster={{ selected: showRoster, onSelect: () => { setShowRoster(true); setView('week'); setSelectedBlockKey(null) } }}
         extra={showCreate && (
           <Space.Compact className="shrink-0">
-            <Button type="primary" className="h-9! rounded-s-lg! rounded-e-none! px-3.5! text-[13px]! font-semibold! shadow-none!" icon={<PlusOutlined />} disabled={createDisabled} onClick={() => openForm()}>
+            <Button type="primary" className="rounded-s-lg! rounded-e-none! px-3.5! shadow-none!" icon={<PlusOutlined />} disabled={createDisabled} onClick={() => openForm()}>
               {createLabel}
             </Button>
             <Dropdown trigger={['click']} menu={{
@@ -740,7 +740,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
                 if (key === 'selected-day') openForm(undefined, { date: anchor })
               },
             }}>
-              <Button type="primary" className="h-9! rounded-s-none! rounded-e-lg! shadow-none!" aria-label="Tùy chọn đăng ký ca" disabled={createDisabled} icon={<DownOutlined />} />
+              <Button type="primary" className="rounded-s-none! rounded-e-lg! shadow-none!" aria-label="Tùy chọn đăng ký ca" disabled={createDisabled} icon={<DownOutlined />} />
             </Dropdown>
           </Space.Compact>
         )}

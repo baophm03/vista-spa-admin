@@ -64,7 +64,7 @@ import type { GetReportsSessionsUsedAdminParams } from '@/api/models/getReportsS
 const { RangePicker } = DatePicker
 
 const tooltipStyle = {
-  borderRadius: 12,
+  borderRadius: 8,
   border: '1px solid var(--brand-border)',
   fontSize: 13,
 }
@@ -387,7 +387,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     width: 40,
     height: 40,
     flexShrink: 0,
-    borderRadius: 10,
+    borderRadius: 8,
     border: '1px solid var(--brand-border-soft)',
     background: '#fff',
     color: 'var(--brand-primary)',
@@ -400,7 +400,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   } as const
   const pillBtnStyle = {
     height: 40,
-    borderRadius: 10,
+    borderRadius: 8,
     border: '1px solid var(--brand-border-soft)',
     background: '#fff',
     cursor: 'pointer',

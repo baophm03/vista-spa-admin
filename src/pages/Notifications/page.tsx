@@ -179,7 +179,7 @@ export default function Notifications() {
 
       {notificationsQuery.isError && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải được danh sách thông báo"

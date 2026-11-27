@@ -226,7 +226,7 @@ export default function CommissionRulesPanel() {
             </div>
             {rulesQuery.isError && (
               <Alert
-                className="mb-4" type="error" showIcon
+                className="mb-4! max-lg:mb-3!" type="error" showIcon
                 message="Không tải được quy tắc hoa hồng"
                 description={errorMessage(rulesQuery.error)}
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}

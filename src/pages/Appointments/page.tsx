@@ -554,7 +554,7 @@ export default function Appointments() {
   const canCreate = ability.can('CREATE' as never, 'APPOINTMENT')
   const createButton = (
     <Can I="CREATE" a="APPOINTMENT">
-      <Button type="primary" className="h-9! shrink-0 rounded-lg! px-3.5! text-[13px]! font-semibold! shadow-none!" icon={<PlusOutlined />} onClick={() => openModal()} aria-label="Thêm lịch hẹn">
+      <Button type="primary" className="shrink-0 rounded-lg! px-3.5! shadow-none!" icon={<PlusOutlined />} onClick={() => openModal()} aria-label="Thêm lịch hẹn">
         Thêm lịch hẹn
       </Button>
     </Can>

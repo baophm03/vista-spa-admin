@@ -56,8 +56,8 @@ export default function ServiceDetailModal({ service, onClose, categories, branc
       <Row gutter={[20, 16]}>
         <Col xs={24} sm={9}>
           {cover
-            ? <img src={cover} alt={service.title} style={{ width: '100%', borderRadius: 12, objectFit: 'cover' }} />
-            : <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 12, background: '#F1F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8A8D93' }}>Không có ảnh</div>}
+            ? <img src={cover} alt={service.title} style={{ width: '100%', borderRadius: 8, objectFit: 'cover' }} />
+            : <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 8, background: '#F1F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8A8D93' }}>Không có ảnh</div>}
           {galleries.length > 0 && (
             <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
               {galleries.map((src) => (

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Popover, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import { displayName } from '@/utils/displayName'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useAbility } from '@casl/react'
@@ -287,14 +287,13 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
             </>
           ) : (
             <>
-              <Input
+              <Input.Search
                 allowClear
-                prefix={<SearchOutlined />}
                 placeholder="Tìm theo tên, SĐT hoặc tên voucher"
-                className="voucher-customer-search"
+                className="voucher-search voucher-customer-search"
                 value={searchInput}
                 onChange={(event) => changeSearchInput(event.target.value)}
-                onPressEnter={() => applySearch(searchInput)}
+                onSearch={() => applySearch(searchInput)}
                 onBlur={() => applySearch(searchInput)}
               />
               {branchSelect}

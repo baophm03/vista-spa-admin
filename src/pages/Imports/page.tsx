@@ -541,10 +541,10 @@ export default function Imports() {
         size="small"
         current={report && !report.dry_run ? 2 : report ? 1 : 0}
         items={[{ title: 'Tải file' }, { title: 'Kiểm tra dữ liệu' }, { title: 'Nhập vào hệ thống' }]}
-        className="mb-4 max-lg:mb-3"
+        className="mb-4! max-lg:mb-3!"
       />
 
-      <Card className="mb-4 max-lg:mb-3">
+      <Card className="mb-4! max-lg:mb-3!">
         <Form form={form} layout="vertical">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 12, maxWidth: 760 }}>
             <Form.Item label="Đối tượng nhập" style={{ width: '100%', minWidth: 0, marginBottom: 8 }}>
@@ -640,7 +640,7 @@ export default function Imports() {
       </Card>
 
       {activeJob && (
-        <Card title={`Đang xử lý nền — ${activeJob.filename}`} className="mb-4 max-lg:mb-3">
+        <Card title={`Đang xử lý nền — ${activeJob.filename}`} className="mb-4! max-lg:mb-3!">
           <Progress
             percent={jobProgress?.total ? Math.round((jobProgress.processed / jobProgress.total) * 100) : 0}
             status={jobProgress?.status === 'FAILED' ? 'exception' : 'active'}
@@ -653,7 +653,7 @@ export default function Imports() {
       )}
 
       {report && (
-        <Card title={`Báo cáo — ${report.dry_run ? 'Kiểm tra dữ liệu' : 'Đã nhập vào hệ thống'}: ${report.filename ?? parsedFileName}`} className="mb-4 max-lg:mb-3">
+        <Card title={`Báo cáo — ${report.dry_run ? 'Kiểm tra dữ liệu' : 'Đã nhập vào hệ thống'}: ${report.filename ?? parsedFileName}`} className="mb-4! max-lg:mb-3!">
           <Space wrap size={24} style={{ marginBottom: 12 }}>
             <Typography.Text>Tổng dòng: <b>{report.total_rows}</b></Typography.Text>
             <Typography.Text>Hợp lệ: <b style={{ color: '#389e0d' }}>{report.valid_rows}</b></Typography.Text>
