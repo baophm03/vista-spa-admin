@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Empty, Space, Spin } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { Button } from 'antd'
+import { MedicineBoxOutlined } from '@ant-design/icons'
+import { DetailEmpty, DetailLoading } from '@/components/base/DetailModal'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -65,11 +66,11 @@ export default function CustomerProfileTreatmentsTab({ profileId }: { profileId:
     return () => { active = false }
   }, [canReadPayments, profileId, refresh])
 
-  if (loading) return <div className="py-9 text-center"><Spin tip={canReadPayments ? 'Đang tải gói, buổi, ảnh và thanh toán…' : 'Đang tải gói, buổi và ảnh…'} /></div>
-  if (error) return <Alert type="error" showIcon message="Không tải được lịch sử gói dịch vụ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => setRefresh((value) => value + 1)}>Thử lại</Button>} />
-  if (!rows.length) return <Empty description="Khách chưa có gói dịch vụ" />
+  if (loading) return <DetailLoading label={canReadPayments ? 'Đang tải gói, buổi, ảnh và thanh toán' : 'Đang tải gói, buổi và ảnh'} />
+  if (error) return <DetailEmpty icon={<MedicineBoxOutlined />} title="Không tải được lịch sử gói dịch vụ" description={error} action={<Button onClick={() => setRefresh((value) => value + 1)}>Thử lại</Button>} />
+  if (!rows.length) return <DetailEmpty icon={<MedicineBoxOutlined />} title="Khách chưa có gói dịch vụ" />
 
-  return <Space direction="vertical" size={14} style={{ width: '100%' }}>
+  return <div className="dm-stack">
     {rows.map((row) => <CustomerTreatmentDetailCard key={row.treatment.id} {...row} canReadPayments={canReadPayments} />)}
-  </Space>
+  </div>
 }

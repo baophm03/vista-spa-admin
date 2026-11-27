@@ -128,3 +128,19 @@ export const healthDetails = (fields: HealthFields) => [
 export function displayDate(date?: string) {
   return date && dayjs(date).isValid() ? dayjs(date).format('DD/MM/YYYY') : '—'
 }
+
+/** Ô "Dị ứng" coi "không" / trống là không có dị ứng */
+export const hasAllergy = (value?: string | null) => !!value && !['không', 'khong', 'no', '-'].includes(value.trim().toLocaleLowerCase('vi'))
+
+export const recordFields = (record: CustomerHealthRecord, skinTypes: SkinTypeOption[]): HealthFields => ({
+  checked_date: record.checked_date,
+  checked_by: record.checked_by ?? undefined,
+  medical_history: record.medical_history ?? undefined,
+  skin_type: skinTypeLabel(record.skin_type, skinTypes),
+  condition: record.condition,
+  allergies: record.allergies ?? undefined,
+  protocol: record.protocol ?? undefined,
+  products_used: record.products_used ?? undefined,
+  advice: record.advice ?? undefined,
+  note: record.note ?? undefined,
+})

@@ -85,6 +85,17 @@ const STATUS_LABEL: Record<string, string> = {
   no_show: 'Không đến',
 }
 
+/** Màu cột theo trạng thái trong biểu đồ "Lịch hẹn theo trạng thái" — cùng tông với palette trạng thái của hệ thống. */
+const STATUS_BAR_COLORS: Record<string, string> = {
+  pending: '#FAAD14',
+  approved: '#1677FF',
+  in_progress: '#722ED1',
+  completed: '#52C41A',
+  cancelled: '#FF4D4F',
+  rejected: '#CF1322',
+  no_show: '#8C8C8C',
+}
+
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
   UNPAID: 'Chưa thanh toán',
   PARTIAL: 'Thanh toán một phần',
@@ -733,7 +744,11 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                     <XAxis dataKey="status" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="count" name="Số lịch" fill={brand.primary} radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="count" name="Số lịch" radius={[6, 6, 0, 0]}>
+                      {(appointments.by_status ?? []).map((s: any) => (
+                        <Cell key={s.status} fill={STATUS_BAR_COLORS[s.status] ?? brand.primary} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}

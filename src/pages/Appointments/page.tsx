@@ -588,7 +588,6 @@ export default function Appointments() {
       hiddenStaff={hiddenCalendarStaff}
       unassignedVisible={unassignedVisible}
       statusFilter={filter}
-      activeFilterCount={calendarFilterCount}
       onBranchChange={changeBranch}
       onToggleStaff={toggleCalendarStaff}
       onToggleAllStaff={toggleAllCalendarStaff}
@@ -597,13 +596,13 @@ export default function Appointments() {
         setPage(1)
       }}
       onStatusChange={(value) => { setFilter(value); setPage(1) }}
-      onReset={() => {
-        changeBranch(undefined)
-        setFilter('all')
-        setPage(1)
-      }}
     />
   )
+  const resetCalendarFilters = () => {
+    changeBranch(undefined)
+    setFilter('all')
+    setPage(1)
+  }
 
   const calendarToolbar = (
     <CalendarToolbar
@@ -742,11 +741,25 @@ export default function Appointments() {
         onOpenFilters={() => setFilterDrawerOpen(true)}
         onCreate={canCreate ? () => openModal() : undefined}
       />
-      <Drawer title="Ngày và bộ lọc" placement="right" size="min(344px, 100vw)" open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
-        <div className="flex flex-col gap-4">
+      <Drawer
+        rootClassName="appt-filter-drawer"
+        title={(
+          <span className="appt-filter-title">
+            Bộ lọc lịch
+            {calendarFilterCount > 0 && <span className="appt-filter-badge" aria-label={`${calendarFilterCount} bộ lọc đang dùng`}>{calendarFilterCount}</span>}
+          </span>
+        )}
+        extra={calendarFilterCount > 0 && <Button type="link" className="px-0!" onClick={resetCalendarFilters}>Đặt lại</Button>}
+        placement="right"
+        size="min(380px, 100vw)"
+        open={filterDrawerOpen}
+        onClose={() => setFilterDrawerOpen(false)}
+      >
+        <section className="appt-filter-card" aria-label="Chọn ngày">
+          <h3>Ngày</h3>
           {calendarMonth((date) => { changeCalendarDate(date); setFilterDrawerOpen(false) })}
-          {calendarFilterPanel}
-        </div>
+        </section>
+        {calendarFilterPanel}
       </Drawer>
       {displayMode === 'calendar' && isMobile && (
         <section aria-label="Lịch hẹn theo ngày">

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import dayjs from 'dayjs'
-import { Alert, Button, Empty, Statistic, Typography } from 'antd'
+import { Button, Typography } from 'antd'
+import { StarOutlined } from '@ant-design/icons'
+import { DetailCard, DetailEmpty, DetailHero, DetailLoading } from '@/components/base/DetailModal'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useGetUsersCustomersIdPointsAdmin } from '@/api/endpoints/customers'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
-import { TreatmentLoading } from './shared'
 /** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
 export default function PointsHistoryPanel({ profileId }: { profileId: string }) {
   const pointsQuery = useGetUsersCustomersIdPointsAdmin(profileId)
@@ -22,19 +23,19 @@ export default function PointsHistoryPanel({ profileId }: { profileId: string })
     REDEEM: 'Đổi tiền gói',
   }
   const rows = data?.history ?? []
-  if (pointsQuery.isLoading) return <TreatmentLoading label="Đang tải lịch sử điểm thưởng" />
+  if (pointsQuery.isLoading) return <DetailLoading label="Đang tải lịch sử điểm thưởng" />
   if (pointsQuery.isError && !data) {
-    return <Alert type="error" showIcon message="Không tải được lịch sử điểm thưởng"
+    return <DetailEmpty icon={<StarOutlined />} title="Không tải được lịch sử điểm thưởng"
       description={errorMessage(pointsQuery.error)}
-      action={<Button size="small" onClick={() => void pointsQuery.refetch()}>Thử lại</Button>} />
+      action={<Button onClick={() => void pointsQuery.refetch()}>Thử lại</Button>} />
   }
   return (
-    <div className="pt-2">
-      <Statistic title="Điểm khả dụng" value={data?.points ?? 0} className="mb-4" />
+    <div className="dm-stack">
+      <DetailHero caption="Điểm khả dụng" title={Number(data?.points ?? 0).toLocaleString('vi-VN')} sub={`${rows.length} lần biến động điểm`} />
       {rows.length === 0 ? (
-        <Empty description="Chưa có biến động điểm nào" />
+        <DetailEmpty icon={<StarOutlined />} title="Chưa có biến động điểm nào" />
       ) : (
-        <>
+        <DetailCard title="Lịch sử điểm">
           <ResponsiveTable
             rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
             size="small"
@@ -57,7 +58,7 @@ export default function PointsHistoryPanel({ profileId }: { profileId: string })
             ]}
           />
           <ListPagination page={pointPage} limit={8} total={rows.length} onChange={setPointPage} noun="biến động điểm" />
-        </>
+        </DetailCard>
       )}
     </div>
   )

@@ -26,7 +26,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ForbiddenResponse,
   GetInvoicesCustomerTreatmentIdPrintAdminParams,
+  InternalErrorResponse,
   NotFoundResponse,
   UnauthorizedResponse
 } from '../models';
@@ -34,6 +36,200 @@ import type {
 import { customInstance } from '../mutator/custom-instance';
 
 
+
+
+
+/**
+ * GET /product-orders/{id}/print/admin. Phiếu thanh toán đơn hàng sản phẩm (cùng mẫu phiếu in liệu trình): cơ sở, khách hàng, danh sách sản phẩm, giảm voucher, tổng tiền. Chỉ hoạt động khi `module.invoice` bật. Cần đăng nhập + `invoice.view_all` + `product_order.view_all`.
+ * @summary Invoice print sheet for a product order (print-ready HTML)
+ */
+export const getProductOrdersIdPrintAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/product-orders/${id}/print/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetProductOrdersIdPrintAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/product-orders/${id}/print/admin`
+    ] as const;
+    }
+
+export const getGetProductOrdersIdPrintAdminQueryKey = (id?: string,) => {
+    return [
+    `/product-orders/${id}/print/admin`
+    ] as const;
+    }
+
+    
+export const getGetProductOrdersIdPrintAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersIdPrintAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>> = ({ signal }) => getProductOrdersIdPrintAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductOrdersIdPrintAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>
+export type GetProductOrdersIdPrintAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetProductOrdersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Invoice print sheet for a product order (print-ready HTML)
+ */
+
+export function useGetProductOrdersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductOrdersIdPrintAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Invoice print sheet for a product order (print-ready HTML)
+ */
+export const prefetchGetProductOrdersIdPrintAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductOrdersIdPrintAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetProductOrdersIdPrintAdminQueryOptions = <TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersIdPrintAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>> = ({ signal }) => getProductOrdersIdPrintAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductOrdersIdPrintAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>>
+export type GetProductOrdersIdPrintAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetProductOrdersIdPrintAdmin<TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersIdPrintAdmin<TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersIdPrintAdmin<TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Invoice print sheet for a product order (print-ready HTML)
+ */
+
+export function useGetProductOrdersIdPrintAdmin<TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductOrdersIdPrintAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Invoice print sheet for a product order (print-ready HTML)
+ */
+export const prefetchGetProductOrdersIdPrintAdminQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersIdPrintAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductOrdersIdPrintAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
 
 
 

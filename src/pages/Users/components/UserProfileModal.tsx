@@ -1,7 +1,7 @@
-import { Button, Col, Form, Image, Input, InputNumber, Modal, Row, Switch, Typography } from 'antd'
+import { Button, Col, Form, Input, InputNumber, Modal, Row, Switch } from 'antd'
 import type { FormInstance } from 'antd'
-import ServiceImageField from '@/components/ServiceImageField'
-import { fileSrc } from '@/hooks/useFileUrl'
+import { AvatarEditor } from '@/components/base/UserAvatar'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { StaffProfile } from '@/api/models/staffProfile'
 import type { UserRow } from './constants'
 
@@ -14,6 +14,30 @@ interface UserProfileModalProps {
   saving: boolean
   onCancel: () => void
   onOk: () => void
+}
+
+/** Ô ảnh đại diện trong form: ảnh hệ thống (đổi / gỡ) + ảnh Zalo bên cạnh. Lưu cùng nút "Lưu" của form. */
+function StaffAvatarField({ value, onChange, initialId, initialSrc, zaloSrc, name, editable }: {
+  value?: string | null
+  onChange?: (value: string | null) => void
+  initialId?: string | null
+  initialSrc?: string | null
+  zaloSrc?: string | null
+  name?: string | null
+  editable: boolean
+}) {
+  const urlMap = useFileUrlMap()
+  const systemSrc = !value ? null : value === initialId ? initialSrc ?? resolveFileSrc(urlMap, value) : resolveFileSrc(urlMap, value)
+  return (
+    <AvatarEditor
+      systemSrc={systemSrc}
+      zaloSrc={zaloSrc}
+      name={name}
+      size={64}
+      editable={editable}
+      onChange={(fileId) => onChange?.(fileId)}
+    />
+  )
 }
 
 export default function UserProfileModal({ form, open, profileUser, canUpdate, profileDetails, saving, onCancel, onOk }: UserProfileModalProps) {
@@ -54,25 +78,15 @@ export default function UserProfileModal({ form, open, profileUser, canUpdate, p
         </Form.Item>
         <Row gutter={12}>
           <Col xs={24} sm={12}>
-            {canUpdate ? (
-              <Form.Item name="photo_file_id" label="Ảnh đại diện">
-                <ServiceImageField />
-              </Form.Item>
-            ) : (
-              <Form.Item label="Ảnh đại diện">
-                {avatarSrc ? (
-                  <Image
-                    src={avatarSrc}
-                    alt="Ảnh đại diện KTV"
-                    width={72}
-                    height={72}
-                    className="rounded-md object-cover"
-                  />
-                ) : (
-                  <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>
-                )}
-              </Form.Item>
-            )}
+            <Form.Item name="photo_file_id" label="Ảnh đại diện">
+              <StaffAvatarField
+                initialId={(profileDetails as any)?.photo_file?.id ?? (profileDetails as any)?.photo_file_id}
+                initialSrc={avatarSrc}
+                zaloSrc={profileUser?.zalo_avatar}
+                name={profileUser?.zalo_name || profileUser?.email}
+                editable={canUpdate}
+              />
+            </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
             <Form.Item name="sort_order" label="Thứ tự sắp xếp" initialValue={0}>

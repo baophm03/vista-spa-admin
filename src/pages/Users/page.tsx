@@ -1,7 +1,7 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Tag, Typography, message } from 'antd'
+import { Button, Form, Input, Modal, Select, Space, Switch, Tag, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
   EditOutlined,
@@ -9,7 +9,6 @@ import {
   PlusOutlined,
   ProfileOutlined,
   UndoOutlined,
-  UserOutlined,
 } from '@ant-design/icons'
 import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
@@ -30,6 +29,7 @@ import { useGetUsersStaffAdmin, useGetUsersStaffIdAdmin, usePutUsersStaffIdAdmin
 
 import UserModal from './components/UserModal'
 import UserProfileModal from './components/UserProfileModal'
+import { UserAvatar } from '@/components/base/UserAvatar'
 import {
   isAdminRole,
   isUserRole,
@@ -355,11 +355,8 @@ export default function Users() {
               const photo = fileSrc((profile as any)?.photo_file) ?? resolveFileSrc(urlMap, profile?.photo_file_id)
               return (
                 <Space>
-                  {photo ? (
-                    <img src={photo} alt="" width={36} height={36} className="rounded-full object-cover" />
-                  ) : (
-                    <Avatar size={36} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
-                  )}
+                  {/* Ảnh hệ thống (hồ sơ chuyên viên) ưu tiên, không có thì ảnh Zalo */}
+                  <UserAvatar src={photo || s.zalo_avatar} name={s.zalo_name || s.email} size={36} />
                   <Space direction="vertical" size={0}>
                     <span className="font-semibold">{s.zalo_name || s.email || '—'}</span>
                     {s.email && <Typography.Text type="secondary" className="text-xs!">{s.email}</Typography.Text>}

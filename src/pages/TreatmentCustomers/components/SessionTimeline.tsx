@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, Button, Col, DatePicker, Divider, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Tooltip, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons'
+import { Alert, Button, Col, DatePicker, Divider, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Tooltip, Typography, message } from 'antd'
+import { CalendarOutlined, DeleteOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -15,7 +15,8 @@ import { sessionScheduledTimestamp } from './constants'
 import { customFieldValueText } from './constants'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import SessionPhotos from './SessionPhotos'
-import { CellVal, SubHead, TreatmentLoading, TRow } from './shared'
+import { CellVal, SubHead, TRow } from './shared'
+import { DetailChip, DetailEmpty, DetailLoading } from '@/components/base/DetailModal'
 /** Timeline các buổi điều trị của 1 lượt — hiển thị trong modal chi tiết */
 export default function SessionTimeline({
   ctId,
@@ -291,8 +292,8 @@ export default function SessionTimeline({
     }
   }
 
-  if (loading) return <TreatmentLoading label="Đang tải buổi điều trị" />
-  if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" className="py-6" />
+  if (loading) return <DetailLoading label="Đang tải buổi điều trị" />
+  if (!sessions.length) return <DetailEmpty icon={<CalendarOutlined />} title="Chưa có buổi nào" description="Bấm “+1 buổi” ở thanh dưới để tạo buổi đầu tiên." />
 
   /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
   const canStart = (s: SessionRow) =>
@@ -316,38 +317,20 @@ export default function SessionTimeline({
   return (
     <>
       {/* Mỗi buổi = 1 bảng liền mạch: header tint + dòng subheader pha + dòng dữ liệu */}
-      <div className="flex flex-col gap-3.5">
+      <div className="dm-stack">
         {sessions.map((s) => {
           const st = sessionStatusConfig[s.status as keyof typeof sessionStatusConfig] ?? { label: s.status ?? '—', color: '#BFBFBF' }
           // Ảnh quá trình = kind 'process' + ảnh cũ chưa phân loại
           const midPhotos = (photos[s.id] ?? []).filter((p) => p.kind === 'process' || !p.kind)
           return (
-            <div
-              key={s.id}
-              className="overflow-hidden rounded-lg border border-[var(--brand-border)] bg-white"
-            >
-              {/* Header bảng buổi */}
-              <div className="flex flex-wrap items-center gap-3 bg-[var(--brand-bg)] px-4 py-[13px]">
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 8,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    fontSize: 17,
-                    background: `${st.color}14`,
-                    color: st.color,
-                    border: `1px solid ${st.color}33`,
-                  }}
-                >
+            <div key={s.id} className="dm-card dm-session">
+              {/* Header thẻ buổi */}
+              <div className="dm-session-head">
+                <div className="dm-session-no" style={{ background: `${st.color}14`, color: st.color }}>
                   {String(s.session_no).padStart(2, '0')}
                 </div>
                 <Space size={8} align="center" wrap>
-                  <span className="text-[15.5px] font-extrabold text-[#26211F]">
+                  <span className="dm-session-title">
                     {s.scheduled_at
                       ? formatDateTime(s.scheduled_at)
                       : s.appointment?.appt_date
@@ -356,28 +339,11 @@ export default function SessionTimeline({
                           ? `Thực hiện ${formatDateTime(s.started_at || s.done_at || s.completed_at)}`
                           : 'Chưa xếp lịch'}
                   </span>
-                  <span
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      padding: '3px 12px',
-                      borderRadius: 999,
-                      background: `${st.color}1A`,
-                      color: st.color,
-                    }}
-                  >
+                  <span className="dm-chip" style={{ background: `${st.color}1A`, color: st.color }}>
                     {st.label}
                   </span>
-                  {!!s.is_warranty && (
-                    <span className="rounded-full bg-[#F59E0B1A] px-3 py-[3px] text-[13px] font-bold text-[#B45309]">
-                      Bảo hành
-                    </span>
-                  )}
-                  {!!s.service?.title && (
-                    <span className="rounded-full bg-[var(--brand-bg)] px-3 py-[3px] text-[13px] font-bold text-[#26211F]" style={{ border: '1px solid var(--brand-border)' }}>
-                      {s.service.title}
-                    </span>
-                  )}
+                  {!!s.is_warranty && <DetailChip tone="pending">Bảo hành</DetailChip>}
+                  {!!s.service?.title && <DetailChip>{s.service.title}</DetailChip>}
                 </Space>
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
                     <Space size={6} wrap className="ml-auto">
@@ -438,12 +404,12 @@ export default function SessionTimeline({
 
               {/* Thân bảng — các dòng thông tin */}
               <TRow label="KTV">
-                {s.staff_id ? <span className="font-semibold">{staffName(s.staff_id)}</span> : <CellVal v={null} />}
+                {s.staff_id ? <span>{staffName(s.staff_id)}</span> : <CellVal v={null} />}
               </TRow>
               {s.session_value != null && <TRow label="Giá trị buổi">{formatMoney(s.session_value)}</TRow>}
               {(s.started_at || s.done_at || s.completed_at) && (
                 <TRow label="Thời gian">
-                  <span className="text-[13px] font-semibold text-[#5A5C60]">
+                  <span className="dm-value-sub">
                     {[
                       s.started_at && `Bắt đầu ${formatDateTime(s.started_at)}`,
                       s.done_at && `Xong ${formatDateTime(s.done_at)}`,

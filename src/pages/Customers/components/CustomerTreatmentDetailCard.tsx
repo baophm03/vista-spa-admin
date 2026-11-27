@@ -1,6 +1,7 @@
-import { Card, Descriptions, Empty, Image, Table, Tag, Typography } from 'antd'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import ResponsiveTable from '@/components/base/ResponsiveTable'
+import { Image } from 'antd'
+import { RightOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
+import { DetailCard, DetailChip, DetailField, DetailProgress, type ChipTone } from '@/components/base/DetailModal'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -10,23 +11,23 @@ import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 
 interface Props {
-  treatment: CustomerTreatment & { package_type?: { name?: string } | null }
+  treatment: CustomerTreatment & { package_type?: { name?: string; code?: string } | null }
   sessions: TreatmentSession[]
   payments: PaymentLog[]
   photos: SessionPhoto[]
   canReadPayments: boolean
 }
 
-const TREATMENT_STATUS: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: 'Đang dùng', color: 'green' },
-  FINISHED: { label: 'Hoàn tất', color: 'blue' },
-  CANCELLED: { label: 'Đã hủy', color: 'default' },
+const TREATMENT_STATUS: Record<string, { label: string; tone: ChipTone }> = {
+  ACTIVE: { label: 'Đang dùng', tone: 'success' },
+  FINISHED: { label: 'Hoàn tất', tone: 'primary' },
+  CANCELLED: { label: 'Đã hủy', tone: 'neutral' },
 }
 
-const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  UNPAID: { label: 'Chưa thanh toán', color: 'red' },
-  PARTIAL: { label: 'Thanh toán một phần', color: 'orange' },
-  PAID: { label: 'Đã thanh toán', color: 'green' },
+const PAYMENT_STATUS: Record<string, { label: string; tone: ChipTone }> = {
+  UNPAID: { label: 'Chưa thanh toán', tone: 'danger' },
+  PARTIAL: { label: 'Thanh toán một phần', tone: 'pending' },
+  PAID: { label: 'Đã thanh toán', tone: 'success' },
 }
 
 const QUOTA_LABEL: Record<string, string> = {
@@ -54,90 +55,94 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
   const urlMap = useFileUrlMap()
   const photoSrcOf = (photo: SessionPhoto) => fileSrc((photo as any).file) ?? resolveFileSrc(urlMap, (photo as any).file_id)
   const title = (treatment.package_snapshot?.name as string | undefined) || treatment.package_type?.name || 'Gói dịch vụ'
-  const treatmentStatus = TREATMENT_STATUS[String(treatment.status ?? '').toUpperCase()] ?? { label: treatment.status || '—', color: 'default' }
-  const paymentStatus = PAYMENT_STATUS[String(treatment.payment_status ?? '').toUpperCase()] ?? { label: treatment.payment_status || '—', color: 'default' }
+  const treatmentStatus = TREATMENT_STATUS[String(treatment.status ?? '').toUpperCase()] ?? { label: treatment.status || '—', tone: 'neutral' as ChipTone }
+  const paymentStatus = PAYMENT_STATUS[String(treatment.payment_status ?? '').toUpperCase()] ?? { label: treatment.payment_status || '—', tone: 'neutral' as ChipTone }
   const quota = treatment.quota_type === 'SESSIONS'
     ? Math.max(0, Number(treatment.sessions_total ?? 0) - Number(treatment.sessions_used ?? 0)) + ' buổi'
     : treatment.quota_type === 'VALUE'
       ? money(Number(treatment.value_total ?? 0) - Number(treatment.value_used ?? 0))
       : 'Không giới hạn'
 
-  return (
-    <Card size="small" title={title} extra={<Tag color={treatmentStatus.color}>{treatmentStatus.label}</Tag>}>
-      <Descriptions size="small" column={{ xs: 1, sm: 2, md: 3 }}>
-        <Descriptions.Item label="Loại hạn mức">{localizedLabel(treatment.quota_type, QUOTA_LABEL)}</Descriptions.Item>
-        <Descriptions.Item label="Buổi">{treatment.sessions_used ?? 0}/{treatment.sessions_total ?? '∞'}</Descriptions.Item>
-        <Descriptions.Item label="Còn lại">{quota}</Descriptions.Item>
-        {canReadPayments && <Descriptions.Item label="Thanh toán">{money(treatment.paid_amount)}</Descriptions.Item>}
-        <Descriptions.Item label="Công nợ">{money(treatment.debt_amount)}</Descriptions.Item>
-        {canReadPayments && <Descriptions.Item label="Trạng thái thanh toán"><Tag color={paymentStatus.color}>{paymentStatus.label}</Tag></Descriptions.Item>}
-      </Descriptions>
+  const sessionChip = (value: string | null | undefined) => {
+    const status = value ? sessionStatusConfig[value.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
+    return status
+      ? <span className="dm-chip" style={{ color: status.color, background: `${status.color}1A` }}>{status.label}</span>
+      : <DetailChip>{value ?? '—'}</DetailChip>
+  }
+  const navigate = useNavigate()
+  // Dịch vụ lẻ (gói SINGLE_SESSION) mở ở /standalone-service-customers, còn lại ở /treatment-customers
+  const isSingle = String(treatment.package_type?.code ?? '').toUpperCase() === 'SINGLE_SESSION'
+  const openTreatment = (tab: 'overview' | 'sessions' | 'payments') => navigate(
+    `/${isSingle ? 'standalone-service-customers' : 'treatment-customers'}?treatment_id=${encodeURIComponent(treatment.id)}${tab === 'overview' ? '' : `&tab=${tab}`}`,
+  )
+  const used = Number(treatment.sessions_used ?? 0)
+  const total = Number(treatment.sessions_total ?? 0)
 
-      <Typography.Title level={5} className="mt-[18px]">Lịch sử buổi</Typography.Title>
-      {sessions.length ? <>
-        <Table<TreatmentSession>
-          className="desktop-only"
-          rowKey="id" size="small" pagination={false} dataSource={sessions} columns={[
-          { title: 'Buổi', dataIndex: 'session_no', width: 70 },
-          { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => formatDateTime(value) },
-          { title: 'Trạng thái', dataIndex: 'status', render: (value: string | null) => {
-            const status = value ? sessionStatusConfig[value.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
-            return (
-              <Tag
-                color={status ? undefined : 'default'}
-                style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
-              >
-                {status?.label ?? value ?? '—'}
-              </Tag>
-            )
-          } },
-          { title: 'Ghi chú', dataIndex: 'diary', ellipsis: true, render: (value: string | null) => value || '—' },
-        ]} />
-        <MobileCards
-          rows={sessions}
-          rowKey={(row) => row.id}
-          emptyText="Chưa có buổi điều trị"
-          renderCard={(row) => {
-            const status = row.status ? sessionStatusConfig[row.status.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
-            return (
-              <>
-                <div className="mobile-card-head">
-                  <div className="mobile-card-title">{`Buổi ${row.session_no}`}</div>
-                  <Tag
-                    color={status ? undefined : 'default'}
-                    style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
-                  >
-                    {status?.label ?? row.status ?? '—'}
-                  </Tag>
-                </div>
-                <div className="mobile-card-rows">
-                  <MobileCardRow label="Ngày" value={formatDateTime(row.scheduled_at)} />
-                  <MobileCardRow label="Ghi chú" value={row.diary || '—'} />
-                </div>
-              </>
-            )
-          }}
-        />
-      </> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có buổi điều trị" />}
+  return (
+    <DetailCard
+      title={title}
+      extra={(
+        <span className="dm-title-row">
+          <DetailChip tone={treatmentStatus.tone}>{treatmentStatus.label}</DetailChip>
+          <button type="button" className="dm-link" onClick={() => openTreatment('overview')}>Xem chi tiết <RightOutlined /></button>
+        </span>
+      )}
+    >
+      {treatment.quota_type === 'SESSIONS' && total > 0 && (
+        <div className="mb-4">
+          <DetailProgress percent={(used / total) * 100} left={<>Đã dùng <b>{used}/{total}</b> buổi</>} right={`Còn ${quota}`} />
+        </div>
+      )}
+      <div className="dm-grid">
+        <DetailField label="Loại hạn mức" value={localizedLabel(treatment.quota_type, QUOTA_LABEL)} />
+        <DetailField label="Còn lại" value={quota} />
+        {canReadPayments && <DetailField label="Đã thanh toán" value={money(treatment.paid_amount)} />}
+        <DetailField label="Công nợ" value={<span className={Number(treatment.debt_amount ?? 0) > 0 ? 'dm-text-pending' : undefined}>{money(treatment.debt_amount)}</span>} />
+        {canReadPayments && <DetailField label="Trạng thái thanh toán" value={<DetailChip tone={paymentStatus.tone}>{paymentStatus.label}</DetailChip>} />}
+      </div>
+
+      <div className="dm-subtitle">Lịch sử buổi</div>
+      {sessions.length ? (
+        <div className="dm-list">
+          {sessions.map((session) => (
+            <button key={session.id} type="button" className="dm-list-item dm-list-link" onClick={() => openTreatment('sessions')}>
+              <div className="dm-list-main">
+                <div className="dm-value">Buổi {session.session_no} · {formatDateTime(session.scheduled_at)}</div>
+                {session.diary && <div className="dm-label">{session.diary}</div>}
+              </div>
+              {sessionChip(session.status)}
+              <RightOutlined className="dm-list-chevron" />
+            </button>
+          ))}
+        </div>
+      ) : <div className="dm-value dm-value-empty">Chưa có buổi điều trị</div>}
 
       {canReadPayments && <>
-        <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
-        {payments.length ? <ResponsiveTable<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
-          { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => formatDateTime(value) },
-          { title: 'Số tiền', dataIndex: 'amount', render: (value: number) => money(value) },
-          { title: 'Phương thức', dataIndex: 'method', render: (value: string) => localizedLabel(value, PAYMENT_METHOD) },
-          { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value: string | null) => value || '—' },
-        ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thanh toán" />}
+        <div className="dm-subtitle">Thanh toán</div>
+        {payments.length ? (
+          <div className="dm-list">
+            {payments.map((payment) => (
+              <button key={payment.id} type="button" className="dm-list-item dm-list-link" onClick={() => openTreatment('payments')}>
+                <div className="dm-list-main">
+                  <div className="dm-amount">{money(payment.amount)}</div>
+                  <div className="dm-label">{formatDateTime(payment.paid_at)}{payment.note ? ` · ${payment.note}` : ''}</div>
+                </div>
+                <DetailChip tone="success">{localizedLabel(payment.method, PAYMENT_METHOD)}</DetailChip>
+                <RightOutlined className="dm-list-chevron" />
+              </button>
+            ))}
+          </div>
+        ) : <div className="dm-value dm-value-empty">Chưa có thanh toán</div>}
       </>}
 
-      <Typography.Title level={5} className="mt-[18px]">Ảnh buổi điều trị</Typography.Title>
+      <div className="dm-subtitle">Ảnh buổi điều trị</div>
       {photos.length ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
           {photos.map((photo) => photoSrcOf(photo)
-            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={photoSrcOf(photo) ?? undefined} alt={photo.caption || 'Ảnh buổi điều trị'} />
-            : <Tag key={photo.id}>{photo.caption || 'Ảnh buổi điều trị'} đã lưu</Tag>)}
+            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8 }} src={photoSrcOf(photo) ?? undefined} alt={photo.caption || 'Ảnh buổi điều trị'} />
+            : <DetailChip key={photo.id}>{photo.caption || 'Ảnh buổi điều trị'} đã lưu</DetailChip>)}
         </div>
-      ) : <Typography.Text type="secondary">Chưa có ảnh buổi điều trị.</Typography.Text>}
-    </Card>
+      ) : <div className="dm-value dm-value-empty">Chưa có ảnh buổi điều trị.</div>}
+    </DetailCard>
   )
 }

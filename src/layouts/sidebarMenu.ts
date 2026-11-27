@@ -59,11 +59,11 @@ export const menuItems: MenuItem[] = [
     icon: null,
     children: [
       { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
+      { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'HEALTH_RECORD' }, hideForKtv: true },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
       { key: '/standalone-service-customers', icon: createElement(SolutionOutlined), label: 'Dịch vụ lẻ KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'TREATMENT_SESSION' }, ktvOnly: true },
-      { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'HEALTH_RECORD' }, hideForKtv: true },
       {
         key: '/points', icon: createElement(StarOutlined), label: 'Điểm & Hạng', permission: [
           { action: 'RECALCULATE', subject: 'MEMBERSHIP' },
@@ -84,9 +84,9 @@ export const menuItems: MenuItem[] = [
       { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
       { key: '/standalone-services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ lẻ', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
-      { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Lịch sử thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },
       { key: '/orders', icon: createElement(ProfileOutlined), label: 'Đơn hàng', hideForKtv: true },
+      { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Lịch sử thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/academy/courses', icon: createElement(BookOutlined), label: 'Khóa học đào tạo', permission: { action: 'READ', subject: 'ACADEMY_COURSE' } },
       { key: '/academy/registrations', icon: createElement(SolutionOutlined), label: 'Đăng ký học viên', permission: { action: 'READ', subject: 'ACADEMY_REGISTRATION' } },
       { key: '/discount-rules', icon: createElement(StarOutlined), label: 'Giảm giá & Ưu đãi', permission: { action: 'READ', subject: 'DISCOUNT' } },

@@ -42,7 +42,7 @@ import { Can, useAbility } from '@casl/react'
 import TreatmentCreateModal from './components/TreatmentCreateModal'
 import TreatmentAddSessionModal from './components/TreatmentAddSessionModal'
 import TreatmentPaymentModal, { type PromoTab } from './components/TreatmentPaymentModal'
-import TreatmentDetailModal from './components/TreatmentDetailModal'
+import TreatmentDetailModal, { type TreatmentDetailTab } from './components/TreatmentDetailModal'
 import TreatmentEditModal from './components/TreatmentEditModal'
 import { TreatmentLoading } from './components/shared'
 import './treatment-customers.css'
@@ -90,12 +90,11 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm] = Form.useForm()
   // Modal chi tiết
-  const [detailTab, setDetailTab] = useState<'sessions' | 'payments' | 'points'>('sessions')
+  const [detailTab, setDetailTab] = useState<TreatmentDetailTab>('overview')
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const detailRequest = useRef(0)
   // Mobile tách popup chi tiết: 'summary' = panel tóm tắt+nút (nhẹ), 'tabs' = Buổi/TT/Điểm
-  const [detailMobileSection, setDetailMobileSection] = useState<'summary' | 'tabs'>('summary')
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
   const [addSessionFor, setAddSessionFor] = useState<CustomerTreatment | null>(null)
@@ -254,12 +253,11 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
     debt: statsMeta?.debt_sum ?? 0,
   }
 
-  const openDetail = (row: CustomerTreatment, mobileSection: 'summary' | 'tabs' = 'summary') => {
+  const openDetail = (row: CustomerTreatment, tab: TreatmentDetailTab = 'overview') => {
     const request = ++detailRequest.current
-    setDetailMobileSection(mobileSection)
     setDetail(row)
     setDetailLoading(true)
-    setDetailTab('sessions')
+    setDetailTab(tab)
     // Lấy chi tiết mới nhất (kèm package_service từ snapshot)
     getTreatmentCustomersIdAdmin(row.id)
       .then((response) => {
@@ -283,15 +281,26 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
   }
 
   const [searchParams, setSearchParams] = useSearchParams()
+  // Deep-link: ?treatment_id=<id>[&tab=sessions|payments|points] (vd. từ chi tiết khách hàng, hoa hồng, bảo hành).
+  // Lượt không nằm trong trang đang tải (khác trang / bộ lọc) thì lấy theo id rồi mở.
   const focusTreatmentId = searchParams.get('treatment_id')
   useEffect(() => {
     if (!focusTreatmentId || treatmentsQuery.isLoading) return
-    const row = rows.find((item) => item.id === focusTreatmentId)
-    if (!row) return
-    openDetail(row)
+    const tabParam = searchParams.get('tab')
+    const tab: TreatmentDetailTab = tabParam === 'sessions' || tabParam === 'payments' || tabParam === 'points' ? tabParam : 'overview'
     const next = new URLSearchParams(searchParams)
     next.delete('treatment_id')
+    next.delete('tab')
     setSearchParams(next, { replace: true })
+    const row = rows.find((item) => item.id === focusTreatmentId)
+    if (row) { openDetail(row, tab); return }
+    getTreatmentCustomersIdAdmin(focusTreatmentId)
+      .then((response) => {
+        const fresh = pickData<CustomerTreatment>(response)
+        if (fresh) openDetail(fresh, tab)
+        else message.warning('Không tìm thấy lượt liệu trình')
+      })
+      .catch((err) => message.error(errorMessage(err)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusTreatmentId, rows, treatmentsQuery.isLoading])
 
@@ -419,7 +428,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
           (values.custom_fields ?? {}) as Record<string, unknown>,
         ) ?? {},
       } as never)
-      openDetail(addSessionFor)
+      openDetail(addSessionFor, 'sessions')
       setSessionsRefreshKey((key) => key + 1)
       message.success('Đã tạo buổi mới')
       setAddSessionFor(null)
@@ -934,7 +943,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
                 <div>
                   <Typography.Text strong>{profileName(row)}</Typography.Text>
                   <div className="text-xs text-[#777]">
-                    {packageName(row)}{(profilePhone(row)) ? ` · ${profilePhone(row)}` : ''}
+                    {packageName(row)}
                   </div>
                 </div>
               )
@@ -971,17 +980,13 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
           {
             title: 'Thanh toán',
             key: 'payment',
-            width: 200,
-            render: (_: unknown, row: CustomerTreatment) => (
-              <div>
-                {canReadPayments && <div>
-                  {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
-                </div>}
-                <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} className="mt-1">
-                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
-                </Tag>
-              </div>
-            ),
+            width: 190,
+            render: (_: unknown, row: CustomerTreatment) => canReadPayments ? (
+              /* Badge duy nhất = đã trả/tổng tiền, màu theo trạng thái: cam còn nợ, xanh đã trả đủ */
+              <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'}>
+                {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
+              </Tag>
+            ) : null,
           },
           ...(isSingle ? [] : [{
             title: 'Hạn sử dụng',
@@ -1041,8 +1046,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
               {/* 2 nút tách cho mobile: "Tổng quan" mở panel tóm tắt+nút thao tác,
                   "Chi tiết" mở tab Buổi / Lịch sử thanh toán / Điểm thưởng — khỏi popup quá tải */}
               <div className="mobile-card-actions">
-                <Button size="small" type="primary" onClick={(event) => { event.stopPropagation(); openDetail(row, 'summary') }}>Tổng quan</Button>
-                <Button size="small" onClick={(event) => { event.stopPropagation(); openDetail(row, 'tabs') }}>Chi tiết</Button>
+                <Button size="small" type="primary" onClick={(event) => { event.stopPropagation(); openDetail(row, 'overview') }}>Tổng quan</Button>
+                <Button size="small" onClick={(event) => { event.stopPropagation(); openDetail(row, 'sessions') }}>Chi tiết</Button>
               </div>
             </>
           )
@@ -1138,10 +1143,10 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
         detail={detail}
         detailLoading={detailLoading}
         payOpen={payOpen}
-        mobileSection={detailMobileSection}
         detailTab={detailTab}
         onTabChange={(tab) => setDetailTab(tab)}
         profileName={profileName}
+        profilePhone={profilePhone}
         packageName={packageName}
         formatMoney={formatMoney}
         currencySymbol={currencySymbol}

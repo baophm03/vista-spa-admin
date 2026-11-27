@@ -37,7 +37,7 @@ function describeReason(reason?: string | null) {
   if (reason === 'rank-up') return 'Nâng hạng tự động'
   if (reason?.startsWith('rank-override:')) {
     const note = reason.slice('rank-override:'.length).trim()
-    return note ? `Gán hạng thủ công: ${note}` : 'Gán hạng thủ công'
+    return note ? `Gán hạng: ${note}` : 'Gán hạng'
   }
   return reason || '—'
 }
@@ -175,49 +175,49 @@ export default function CustomerCodeHistoryModal({
             pagination={false}
             scroll={{ x: 650 }}
             locale={{ emptyText: <TableEmpty description="Chưa có lịch sử điểm" /> }}
-          columns={[
-            {
-              title: 'Thời điểm',
-              width: 160,
-              render: (_, row) => pointTime(row),
-            },
-            {
-              title: 'Loại',
-              width: 130,
-              render: (_, row) => <Tag color={Number(row.points_earned ?? 0) >= 0 ? 'green' : 'red'}>{pointType(row)}</Tag>,
-            },
-            {
-              title: 'Điểm',
-              width: 90,
-              align: 'right',
-              render: (_, row) => pointDelta(row),
-            },
-            { title: 'Lý do', dataIndex: 'reason', render: (value?: string | null) => value || '—' },
-            { title: 'Mã giao dịch', dataIndex: 'trans_code', render: (value?: string) => <Typography.Text code>{value || '—'}</Typography.Text> },
-          ]}
-        />
-        <MobileCards
-          rows={visiblePointRows}
-          rowKey={(row) => row.id}
-          loading={loading}
-          emptyText="Chưa có lịch sử điểm"
-          renderCard={(row) => (
-            <>
-              <div className="mobile-card-head flex-wrap">
-                <span className="mobile-card-title">{pointType(row)}</span>
-                {pointDelta(row)}
-              </div>
-              <div className="mobile-card-rows">
-                <MobileCardRow label="Thời điểm" value={pointTime(row)} />
-                <MobileCardRow label="Mã giao dịch" value={row.trans_code || '—'} />
-                <MobileCardRow label="Lý do" value={row.reason || '—'} />
-              </div>
-            </>
-          )}
-        />
-        <div className="max-md:[&>div]:flex-wrap max-md:[&>div>span]:basis-full max-md:[&>div>div]:max-w-full max-md:[&>div>div]:flex-wrap">
-          <ListPagination page={pointPage} limit={10} total={pointRows.length} onChange={setPointPage} noun="giao dịch điểm" hideOnSinglePage />
-        </div>
+            columns={[
+              {
+                title: 'Thời điểm',
+                width: 160,
+                render: (_, row) => pointTime(row),
+              },
+              {
+                title: 'Loại',
+                width: 130,
+                render: (_, row) => <Tag color={Number(row.points_earned ?? 0) >= 0 ? 'green' : 'red'}>{pointType(row)}</Tag>,
+              },
+              {
+                title: 'Điểm',
+                width: 90,
+                align: 'right',
+                render: (_, row) => pointDelta(row),
+              },
+              { title: 'Lý do', dataIndex: 'reason', render: (value?: string | null) => value || '—' },
+              { title: 'Mã giao dịch', dataIndex: 'trans_code', render: (value?: string) => <Typography.Text code>{value || '—'}</Typography.Text> },
+            ]}
+          />
+          <MobileCards
+            rows={visiblePointRows}
+            rowKey={(row) => row.id}
+            loading={loading}
+            emptyText="Chưa có lịch sử điểm"
+            renderCard={(row) => (
+              <>
+                <div className="mobile-card-head flex-wrap">
+                  <span className="mobile-card-title">{pointType(row)}</span>
+                  {pointDelta(row)}
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Thời điểm" value={pointTime(row)} />
+                  <MobileCardRow label="Mã giao dịch" value={row.trans_code || '—'} />
+                  <MobileCardRow label="Lý do" value={row.reason || '—'} />
+                </div>
+              </>
+            )}
+          />
+          <div className="max-md:[&>div]:flex-wrap max-md:[&>div>span]:basis-full max-md:[&>div>div]:max-w-full max-md:[&>div>div]:flex-wrap">
+            <ListPagination page={pointPage} limit={10} total={pointRows.length} onChange={setPointPage} noun="giao dịch điểm" hideOnSinglePage />
+          </div>
         </>
       )}
     </>

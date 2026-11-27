@@ -1,0 +1,843 @@
+/* ===== Modal chi tiết dùng chung (components/base/DetailModal.tsx) — theo ngôn ngữ thiết kế mini app
+   (vista-spa-miniapp/docs/DESIGN.md): nền canvas xám ấm, nội dung là thẻ trắng không bóng, chip trạng thái nền nhạt,
+   thẻ nhấn tím nhạt, icon tròn. Bo góc giữ chuẩn admin 8px (docs/mobile-design-guide.md mục 3). ===== */
+.detail-modal {
+  --dm-canvas: #FAFAF8;
+  --dm-line: #EEEAF1;
+  --dm-text: #302938;
+  --dm-sub: #746B80;
+  --dm-soft: color-mix(in srgb, var(--brand-primary) 7%, white);
+  --dm-light: color-mix(in srgb, var(--brand-primary) 16%, white);
+}
+.detail-modal .ant-modal-container {
+  padding: 0;
+  overflow: hidden;
+}
+.detail-modal .ant-modal-close {
+  top: 22px;
+  inset-inline-end: 22px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--dm-canvas);
+  color: var(--dm-sub);
+}
+/* Modal tự focus nút đóng khi mở → thay vòng outline antd bằng đổi nền cho đỡ rối */
+.detail-modal .ant-modal-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--dm-light);
+}
+.detail-modal .ant-modal-close:hover {
+  background: var(--dm-soft);
+  color: var(--brand-primary);
+}
+
+/* ---- Đầu modal ---- */
+.detail-modal .dm-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 76px 18px 24px;
+  border-bottom: 1px solid var(--dm-line);
+}
+.detail-modal .dm-name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  color: var(--dm-text);
+  overflow-wrap: anywhere;
+}
+.detail-modal .dm-head-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 2px;
+}
+.detail-modal .dm-code {
+  font-size: 13px;
+  color: var(--dm-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Chip trạng thái (StatusChip mini app) ---- */
+.detail-modal .dm-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.detail-modal .dm-chip-primary { background: var(--dm-light); color: var(--brand-dark); }
+.detail-modal .dm-chip-success { background: #DDF5E8; color: #087F59; }
+.detail-modal .dm-chip-pending { background: #FFF0BD; color: #8A5A00; }
+.detail-modal .dm-chip-danger { background: #FDE3E8; color: #C43250; }
+.detail-modal .dm-chip-neutral { background: #F1EFF3; color: var(--dm-sub); }
+
+/* ---- Khung: menu trái + nội dung trên nền canvas ---- */
+.detail-modal .dm-body {
+  display: grid;
+  grid-template-columns: 228px minmax(0, 1fr);
+  height: min(640px, calc(100dvh - 160px));
+}
+.detail-modal .dm-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+  border-inline-end: 1px solid var(--dm-line);
+}
+.detail-modal .dm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dm-sub);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.detail-modal .dm-nav-icon {
+  display: inline-flex;
+  font-size: 15px;
+}
+.detail-modal .dm-nav-item:hover {
+  background: var(--dm-canvas);
+  color: var(--dm-text);
+}
+.detail-modal .dm-nav-item.active {
+  background: var(--dm-soft);
+  color: var(--brand-primary);
+}
+.detail-modal .dm-nav-count {
+  margin-inline-start: auto;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--dm-light);
+  color: var(--brand-dark);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+}
+.detail-modal .dm-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--dm-canvas);
+}
+.detail-modal .dm-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+.detail-modal .dm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--dm-line);
+  background: #fff;
+}
+
+/* ---- Thẻ ---- */
+.detail-modal .dm-stack {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.detail-modal .dm-card {
+  padding: 16px;
+  border-radius: 8px;
+  background: #fff;
+}
+.detail-modal .dm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.detail-modal .dm-card-head-plain {
+  margin-bottom: 12px;
+}
+.detail-modal .dm-card-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--dm-text);
+}
+.detail-modal .dm-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-modal .dm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.detail-modal .dm-link:hover {
+  color: var(--brand-dark);
+}
+.detail-modal .dm-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-meta-danger {
+  margin-top: -10px;
+  color: #C43250;
+}
+
+/* ---- Hero tổng quan: lần khám gần nhất + số liệu ---- */
+.detail-modal .dm-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: var(--dm-soft);
+}
+.detail-modal .dm-hero-caption {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--brand-primary);
+}
+.detail-modal .dm-hero-title {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  color: var(--dm-text);
+  font-variant-numeric: tabular-nums;
+}
+.detail-modal .dm-hero-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-stats {
+  display: flex;
+  gap: 8px;
+}
+.detail-modal .dm-stat {
+  min-width: 96px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+}
+.detail-modal .dm-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--dm-text);
+  font-variant-numeric: tabular-nums;
+}
+.detail-modal .dm-stat-label {
+  font-size: 12px;
+  color: var(--dm-sub);
+  white-space: nowrap;
+}
+.detail-modal .dm-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+/* ---- Trường thông tin ---- */
+.detail-modal .dm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+.detail-modal .dm-field-wide {
+  grid-column: 1 / -1;
+}
+.detail-modal .dm-label {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-value {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dm-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.detail-modal .dm-value-empty {
+  color: #A9A3B2;
+}
+.detail-modal .dm-value a {
+  color: var(--brand-primary);
+}
+.detail-modal .dm-info-list {
+  display: grid;
+  gap: 14px;
+}
+.detail-modal .dm-info-list-inline {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.detail-modal .dm-info-row {
+  display: flex;
+  gap: 12px;
+}
+.detail-modal .dm-info-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--dm-soft);
+  color: var(--brand-primary);
+  font-size: 15px;
+}
+
+/* ---- Thẻ nhấn (lời dặn, nhật ký, dị ứng) ---- */
+.detail-modal .dm-note {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--dm-soft);
+}
+.detail-modal .dm-card .dm-note {
+  margin-top: 16px;
+}
+.detail-modal .dm-note-danger {
+  background: #FDE3E8;
+}
+.detail-modal .dm-note-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--brand-dark);
+}
+.detail-modal .dm-note-danger .dm-note-title {
+  color: #C43250;
+}
+.detail-modal .dm-note-body {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dm-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.detail-modal .dm-inline-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.detail-modal .dm-inline-field .dm-value {
+  margin: 0;
+}
+
+/* ---- Tiến trình buổi liệu trình ---- */
+.detail-modal .dm-progress {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--dm-light);
+}
+.detail-modal .dm-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-primary);
+}
+.detail-modal .dm-progress-caption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-progress-caption b {
+  font-weight: 600;
+  color: var(--dm-text);
+}
+
+/* ---- Trạng thái rỗng / lỗi ---- */
+.detail-modal .dm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 40px 16px;
+  text-align: center;
+}
+.detail-modal .dm-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: var(--dm-soft);
+  color: var(--brand-primary);
+  font-size: 22px;
+}
+.detail-modal .dm-empty-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--dm-text);
+}
+.detail-modal .dm-empty-desc {
+  font-size: 14px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-empty .ant-btn {
+  margin-top: 12px;
+}
+
+/* ---- Bổ sung cho modal chi tiết liệu trình ---- */
+.detail-modal .dm-hero-main {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.detail-modal .dm-hero .dm-progress-wrap {
+  margin-top: 12px;
+  max-width: 420px;
+}
+.detail-modal .dm-hero .dm-progress {
+  background: #fff;
+}
+.detail-modal .dm-text-success { color: #087F59; }
+.detail-modal .dm-text-pending { color: #8A5A00; }
+.detail-modal .dm-text-danger { color: #C43250; }
+.detail-modal .dm-note-pending { background: #FFF0BD; }
+.detail-modal .dm-note-pending .dm-note-title { color: #8A5A00; }
+.detail-modal .dm-list {
+  display: grid;
+}
+.detail-modal .dm-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+.detail-modal .dm-list-item:first-child {
+  padding-top: 0;
+}
+.detail-modal .dm-list-item:last-child {
+  padding-bottom: 0;
+}
+.detail-modal .dm-list-item + .dm-list-item {
+  border-top: 1px solid var(--dm-line);
+}
+.detail-modal .dm-list-main {
+  flex: 1;
+  min-width: 0;
+}
+.detail-modal .dm-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dm-text);
+  font-variant-numeric: tabular-nums;
+}
+.detail-modal .dm-footer-start {
+  margin-inline-end: auto;
+}
+
+/* ---- Thẻ buổi điều trị (SessionTimeline) ---- */
+.detail-modal .dm-session {
+  padding: 0;
+  overflow: hidden;
+}
+.detail-modal .dm-session-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--dm-line);
+}
+.detail-modal .dm-session-no {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.detail-modal .dm-session-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dm-text);
+}
+.detail-modal .dm-session-sub {
+  padding: 14px 16px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+.detail-modal .dm-session-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 16px;
+}
+.detail-modal .dm-session-row > .dm-label {
+  padding-top: 2px;
+}
+.detail-modal .dm-session-row > .dm-value {
+  margin: 0;
+}
+.detail-modal .dm-session > :last-child {
+  padding-bottom: 16px;
+}
+.detail-modal .dm-value-sub {
+  font-size: 13px;
+  color: var(--dm-sub);
+}
+
+/* ---- Ảnh / thẻ minh họa canh giữa trong thẻ (thẻ hạng hội viên) ---- */
+.detail-modal .dm-media {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+/* Hàng nút thao tác cuối thẻ — tự ẩn khi không có nút nào (không đủ quyền) */
+.detail-modal .dm-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--dm-line);
+}
+.detail-modal .dm-card-actions:empty {
+  display: none;
+}
+.detail-modal .dm-card-actions .ant-btn-text {
+  color: var(--dm-sub);
+}
+.detail-modal .dm-card-actions .ant-btn-text:hover {
+  color: var(--brand-primary);
+}
+/* Tiêu đề nhóm nhỏ bên trong thẻ (vd. Lịch sử buổi / Thanh toán / Ảnh) */
+.detail-modal .dm-subtitle {
+  margin: 18px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+/* ---- Phiếu khám trong tab Sức khỏe của chi tiết khách hàng ---- */
+.detail-modal .dm-record + .dm-record,
+.detail-modal .dm-stack > .dm-link + .dm-record {
+  padding-top: 16px;
+  border-top: 1px solid var(--dm-line);
+}
+.detail-modal .dm-record-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.detail-modal .dm-record-head .dm-value {
+  margin: 0;
+  font-weight: 500;
+}
+.detail-modal .dm-stack > .dm-link {
+  justify-self: start;
+}
+/* Hàng bộ lọc trong thẻ (chỉ số + khoảng ngày) */
+.detail-modal .dm-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 300px);
+  gap: 8px;
+}
+
+/* Tiêu đề nhóm nằm ngoài thẻ (vd. "Lịch sử phiếu khám" phía trên danh sách thẻ) */
+.detail-modal .dm-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-inline: 4px;
+}
+.detail-modal .dm-section-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--dm-text);
+}
+
+/* Dòng danh sách bấm được (mở trang chi tiết lịch hẹn / liệu trình) */
+.detail-modal .dm-list-link {
+  width: calc(100% + 16px);
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color .15s;
+}
+.detail-modal .dm-list-link:first-child {
+  padding-top: 12px;
+}
+.detail-modal .dm-list-link:last-child {
+  padding-bottom: 12px;
+}
+.detail-modal .dm-list-link + .dm-list-link {
+  border-top: 1px solid var(--dm-line);
+  border-radius: 0;
+}
+.detail-modal .dm-list-link:hover {
+  border-radius: 8px;
+  background: var(--dm-canvas);
+}
+.detail-modal .dm-list-link:hover + .dm-list-link {
+  border-top-color: transparent;
+}
+.detail-modal .dm-list-link:focus-visible {
+  outline: 2px solid var(--dm-light);
+  outline-offset: -2px;
+}
+.detail-modal .dm-list-chevron {
+  flex: none;
+  font-size: 11px;
+  color: #B8B2C0;
+}
+.detail-modal .dm-list-link:hover .dm-list-chevron {
+  color: var(--brand-primary);
+}
+
+/* ---- Modal không có menu trái (vd. chi tiết đơn hàng) ---- */
+.detail-modal .dm-body-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* 2 cột: thông tin bên trái, nội dung chính (bảng) bên phải */
+.detail-modal .dm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 12px;
+  align-items: start;
+}
+/* Icon tròn thay avatar ở đầu modal (đối tượng không phải người) */
+.detail-modal .dm-avatar-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--dm-soft);
+  color: var(--brand-primary);
+  font-size: 22px;
+}
+/* Bảng tổng tiền cuối thẻ */
+.detail-modal .dm-summary {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--dm-line);
+  font-size: 14px;
+  color: var(--dm-sub);
+}
+.detail-modal .dm-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.detail-modal .dm-summary > div > :last-child {
+  color: var(--dm-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.detail-modal .dm-summary-total {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--dm-text);
+}
+.detail-modal .dm-summary-total > :last-child {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ---- Tablet/mobile: menu thành thanh tab ngang cuộn được, nội dung 1 cột ---- */
+@media (max-width: 1023px) {
+  /* Modal cao theo màn hình: đầu + tab cố định, nội dung cuộn, thanh hành động dính đáy */
+  .detail-modal .ant-modal-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 48px);
+  }
+  .detail-modal .ant-modal-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .detail-modal .dm-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .detail-modal .dm-nav {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 16px;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--dm-line);
+    scrollbar-width: none;
+  }
+  .detail-modal .dm-nav-item {
+    flex: none;
+    height: 36px;
+    gap: 6px;
+    background: var(--dm-canvas);
+  }
+  .detail-modal .dm-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .detail-modal .ant-modal-container {
+    height: calc(100dvh - 16px);
+  }
+  .detail-modal .ant-modal {
+    max-width: calc(100vw - 16px);
+    margin: 8px auto;
+  }
+  .detail-modal .dm-head {
+    padding: 16px 64px 14px 16px;
+  }
+  .detail-modal .dm-name {
+    font-size: 18px;
+    line-height: 26px;
+  }
+  .detail-modal .ant-modal-close {
+    top: 16px;
+    inset-inline-end: 16px;
+  }
+  .detail-modal .dm-scroll {
+    padding: 12px;
+  }
+  .detail-modal .dm-hero {
+    padding: 16px;
+  }
+  .detail-modal .dm-stats {
+    display: grid;
+    grid-template-columns: repeat(var(--dm-stat-count, 3), minmax(0, 1fr));
+    width: 100%;
+  }
+  .detail-modal .dm-stat {
+    min-width: 0;
+    padding: 10px;
+  }
+  .detail-modal .dm-stat-label {
+    white-space: normal;
+  }
+  .detail-modal .dm-info-list-inline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .detail-modal .dm-footer .ant-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .detail-modal .dm-session-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+
+/* Bảng trong modal chi tiết: header nhạt thay cho header màu chủ đạo toàn cục */
+.detail-modal .ant-table-wrapper {
+  border-color: var(--dm-line);
+  box-shadow: none;
+}
+.detail-modal .ant-table-wrapper .ant-table-thead > tr > :is(th, td) {
+  background: var(--dm-canvas) !important;
+  color: var(--dm-sub) !important;
+  font-weight: 500;
+  letter-spacing: 0;
+  border-bottom: 1px solid var(--dm-line) !important;
+}
+.detail-modal .dm-footer .dm-more {
+  flex: none;
+}
+@media (max-width: 767px) {
+  .detail-modal .dm-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Hàng thao tác trong thẻ hẹp (cột phải): nút chính full hàng trên cùng, nút phụ chia đôi hàng dưới */
+.detail-modal .dm-overview .dm-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.detail-modal .dm-overview .dm-card-actions > .ant-btn-primary,
+.detail-modal .dm-overview .dm-card-actions > .ant-btn:only-child {
+  grid-column: 1 / -1;
+  order: -1;
+}
+.detail-modal .dm-overview .dm-card-actions > .ant-btn-text {
+  padding-inline: 4px;
+}
+@media (max-width: 1023px) {
+  .detail-modal .dm-body-single {
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .detail-modal .dm-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

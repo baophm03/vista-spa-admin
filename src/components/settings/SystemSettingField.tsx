@@ -1,6 +1,6 @@
-import { Button, ColorPicker, Input, InputNumber, Select, Space, Switch, Typography } from 'antd'
+import { Button, ColorPicker, Input, InputNumber, Select, Space, Switch, Tag, Typography } from 'antd'
 import type { SystemSetting, SystemSettingSchema } from './systemSettings'
-import { settingLabel } from './systemSettings'
+import { notYetFunctionalSettings, settingLabel } from './systemSettings'
 import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
@@ -307,6 +307,7 @@ export default function SystemSettingField({ setting, value, disabled, alignCont
       <div className="flex min-h-16 items-start justify-between gap-4 py-3">
         <div className="min-w-0 flex-1">
           <Typography.Text strong>{settingLabel(key)}</Typography.Text>
+          {notYetFunctionalSettings.has(key) && <Tag color="warning" className="ml-2!">Chưa hoạt động</Tag>}
           {help && <Typography.Text type="secondary" className="mt-1! block text-xs!">{help}</Typography.Text>}
           {constraints && <Typography.Text type="secondary" className="mt-1! block text-xs!">{constraints}</Typography.Text>}
         </div>
@@ -333,6 +334,7 @@ export default function SystemSettingField({ setting, value, disabled, alignCont
       <div className="grid h-full grid-cols-1 gap-x-6 gap-y-3 border-b border-[var(--brand-border)] py-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-center">
         <div className="min-w-0 flex-1">
           <Typography.Text strong>{settingLabel(key)}</Typography.Text>
+          {notYetFunctionalSettings.has(key) && <Tag color="warning" className="ml-2!">Chưa hoạt động</Tag>}
           {help && <Typography.Text type="secondary" className="mt-1! block text-xs!">{help}</Typography.Text>}
           {constraints && <Typography.Text type="secondary" className="mt-1! block text-xs!">{constraints}</Typography.Text>}
         </div>
@@ -347,6 +349,7 @@ export default function SystemSettingField({ setting, value, disabled, alignCont
     <div className="grid grid-cols-1 gap-2 border-b border-[var(--brand-border)] py-3 last:border-b-0 sm:grid-cols-[minmax(190px,0.8fr)_minmax(240px,1.2fr)] sm:items-start">
       <div className="min-w-0">
         <Typography.Text strong>{settingLabel(key)}</Typography.Text>
+        {notYetFunctionalSettings.has(key) && <Tag color="warning" className="ml-2!">Chưa hoạt động</Tag>}
         {help && <Typography.Text type="secondary" className="mt-1! block text-xs!">{help}</Typography.Text>}
         {constraints && <Typography.Text type="secondary" className="mt-1! block text-xs!">{constraints}</Typography.Text>}
       </div>

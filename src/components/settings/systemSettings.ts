@@ -82,6 +82,19 @@ export function settingLabel(key: string) {
   return labels[key] ?? key
 }
 
+/**
+ * Setting đã khai báo trên BE nhưng chưa được nối vào logic nào (BE/FE đều chưa đọc
+ * để tính hành vi gì) — hiển thị badge "Chưa hoạt động" cạnh tiêu đề.
+ * Kiểm tra lại (grep configService.get / useGetConfig) và xóa khỏi danh sách khi đã nối.
+ */
+export const notYetFunctionalSettings: ReadonlySet<string> = new Set([
+  'customer.shared_across_branches',
+  'academy.levels',
+  'module.shop_checkout',
+  'content.max_video_mb',
+  'content.notify_on_publish',
+])
+
 export function sectionForGroup(group: string) {
   return settingSections.find((section) => (section.groups as readonly string[]).includes(group))
 }
