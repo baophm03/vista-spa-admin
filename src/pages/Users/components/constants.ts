@@ -1,6 +1,8 @@
 export interface UserRow {
   id: string
   zalo_name?: string
+  /** Ảnh Zalo lưu khi nhân viên cấp quyền trên Mini App */
+  zalo_avatar?: string | null
   email?: string
   phone?: string
   branch_id?: string | null

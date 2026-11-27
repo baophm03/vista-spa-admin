@@ -90,3 +90,43 @@
 .mobile-ui :is(.page-title-controls, .toolbar-row) .anticon {
   font-size: 14px;
 }
+
+/* ---- iOS Safari tự zoom khi focus ô nhập có chữ < 16px → mọi ô nhập trên mobile/tablet tối thiểu 16px.
+   Áp toàn cục (không giới hạn .mobile-ui) vì Modal/Drawer/Dropdown render qua portal ngoài trang. ---- */
+@media (max-width: 1023px), (hover: none) and (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file'], [type='button'], [type='submit'], [type='reset'], [type='image'], [type='hidden']),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']),
+  .ql-editor,
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-mentions,
+  .ant-select,
+  .ant-picker,
+  .ant-picker input {
+    font-size: 16px !important;
+  }
+  .ant-input-search-btn,
+  .ant-input-search-btn .anticon,
+  .ant-input-affix-wrapper .anticon,
+  .ant-input-number .anticon,
+  :is(.ant-select-prefix, .ant-select-suffix, .ant-select-clear) .anticon,
+  .ant-picker .anticon {
+    font-size: 16px !important;
+  }
+  /* Chữ 16px nhưng padding antd vẫn tính theo 14px → giữ line-height 22px (như cỡ 14px) để ô nhập không cao hơn
+     controlHeight, khớp chiều cao nút đi kèm (nút tìm kiếm, Space.Compact). Cỡ large vốn đã 16px nên bỏ qua. */
+  input.ant-input:not(.ant-input-lg),
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-lg),
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-lg) input,
+  .ant-input-number:not(.ant-input-number-lg),
+  .ant-input-number:not(.ant-input-number-lg) .ant-input-number-input,
+  .ant-picker:not(.ant-picker-large),
+  .ant-picker:not(.ant-picker-large) input,
+  .ant-select:not(.ant-select-lg) {
+    line-height: 22px !important;
+  }
+}

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Empty, Spin, Table, Tag } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { Button } from 'antd'
+import { CalendarOutlined, RightOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import type { Appointment } from '@/api/models/appointment'
 import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import { DetailCard, DetailChip, DetailEmpty, DetailLoading, type ChipTone } from '@/components/base/DetailModal'
 import { paginateRows } from '@/utils/listTable'
 
 type AppointmentRow = Appointment & {
@@ -14,13 +15,13 @@ type AppointmentRow = Appointment & {
   staff?: { zalo_name?: string } | null
 }
 
-const APPOINTMENT_STATUS: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Chờ duyệt', color: 'orange' },
-  approved: { label: 'Đã duyệt', color: 'purple' },
-  in_progress: { label: 'Đang thực hiện', color: 'blue' },
-  completed: { label: 'Hoàn tất', color: 'green' },
-  cancelled: { label: 'Đã hủy', color: 'default' },
-  rejected: { label: 'Từ chối', color: 'red' },
+const APPOINTMENT_STATUS: Record<string, { label: string; tone: ChipTone }> = {
+  pending: { label: 'Chờ duyệt', tone: 'pending' },
+  approved: { label: 'Đã duyệt', tone: 'primary' },
+  in_progress: { label: 'Đang thực hiện', tone: 'primary' },
+  completed: { label: 'Hoàn tất', tone: 'success' },
+  cancelled: { label: 'Đã hủy', tone: 'neutral' },
+  rejected: { label: 'Từ chối', tone: 'danger' },
 }
 
 export default function CustomerProfileAppointmentsTab({ profileId }: { profileId: string }) {
@@ -29,6 +30,7 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [page, setPage] = useState(1)
+  const navigate = useNavigate()
 
   useEffect(() => {
     let active = true
@@ -44,53 +46,36 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
     return () => { active = false }
   }, [profileId, refresh])
 
-  if (loading) return <>
-    <div className="desktop-only py-9 text-center"><Spin tip="Đang tải lịch hẹn…" /></div>
-    <MobileCards rows={[]} rowKey={() => ''} renderCard={() => null} loading />
-  </>
-  if (error) return <Alert type="error" showIcon message="Không tải được lịch hẹn" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Thử lại</Button>} />
-  if (!rows.length) return <Empty description="Khách chưa có lịch hẹn" />
+  if (loading) return <DetailLoading label="Đang tải lịch hẹn" />
+  if (error) return <DetailEmpty icon={<CalendarOutlined />} title="Không tải được lịch hẹn" description={error} action={<Button onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Thử lại</Button>} />
+  if (!rows.length) return <DetailEmpty icon={<CalendarOutlined />} title="Khách chưa có lịch hẹn" />
 
-  return <>
-    <Table<AppointmentRow>
-      className="desktop-only"
-      rowKey="id"
-      size="small"
-      pagination={false}
-      dataSource={paginateRows(rows, page, 8)}
-    columns={[
-      { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
-      { title: 'Giờ', dataIndex: 'start_time' },
-      { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (value?: string) => value || '—' },
-      { title: 'KTV', dataIndex: ['staff', 'zalo_name'], render: (value?: string) => value || '—' },
-      { title: 'Trạng thái', dataIndex: 'status', render: (value: string) => {
-        const status = APPOINTMENT_STATUS[value?.toLowerCase()]
-        return <Tag color={status?.color ?? 'default'}>{status?.label ?? value ?? '—'}</Tag>
-      } },
-      { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value?: string | null) => value || '—' },
-    ]}
-    />
-    <MobileCards
-      rows={paginateRows(rows, page, 8)}
-      rowKey={(row) => row.id}
-      emptyText="Khách chưa có lịch hẹn"
-      renderCard={(row) => {
-        const status = APPOINTMENT_STATUS[row.status?.toLowerCase() ?? '']
-        return (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.service?.title || 'Lịch hẹn'}</div>
-              <Tag color={status?.color ?? 'default'}>{status?.label ?? row.status ?? '—'}</Tag>
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')}${row.start_time ? ` ${row.start_time.slice(0, 5)}` : ''}`} />
-              <MobileCardRow label="KTV" value={row.staff?.zalo_name || '—'} />
-              <MobileCardRow label="Ghi chú" value={row.note || '—'} />
-            </div>
-          </>
-        )
-      }}
-    />
-    <ListPagination page={page} limit={8} total={rows.length} onChange={setPage} noun="lịch hẹn" />
-  </>
+  return (
+    <DetailCard title="Lịch hẹn" extra={<span className="dm-extra">{rows.length} lịch hẹn</span>}>
+      <div className="dm-list">
+        {paginateRows(rows, page, 8).map((row) => {
+          const status = APPOINTMENT_STATUS[row.status?.toLowerCase() ?? '']
+          return (
+            <button
+              key={row.id}
+              type="button"
+              className="dm-list-item dm-list-link"
+              aria-label={`Mở chi tiết lịch hẹn ${row.service?.title || ''}`.trim()}
+              onClick={() => navigate(`/appointments?appointment_id=${encodeURIComponent(row.id)}&detail=1`)}
+            >
+              <div className="dm-list-main">
+                <div className="dm-value">{row.service?.title || 'Lịch hẹn'}</div>
+                <div className="dm-label">
+                  {[`${dayjs(row.appt_date).format('DD/MM/YYYY')}${row.start_time ? ` ${row.start_time.slice(0, 5)}` : ''}`, row.staff?.zalo_name && `KTV ${row.staff.zalo_name}`, row.note].filter(Boolean).join(' · ')}
+                </div>
+              </div>
+              <DetailChip tone={status?.tone ?? 'neutral'}>{status?.label ?? row.status ?? '—'}</DetailChip>
+              <RightOutlined className="dm-list-chevron" />
+            </button>
+          )
+        })}
+      </div>
+      <ListPagination page={page} limit={8} total={rows.length} onChange={setPage} noun="lịch hẹn" />
+    </DetailCard>
+  )
 }

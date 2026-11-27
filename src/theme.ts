@@ -40,6 +40,8 @@ export const theme: ThemeConfig = {
     borderRadiusSM: 8,
     borderRadiusLG: 8,
     controlHeight: 40,
+    // Ô nhập phẳng: bỏ vầng sáng (outline shadow) khi focus của Input/Select/DatePicker/InputNumber..., chỉ giữ border
+    controlOutlineWidth: 0,
   },
   components: {
     // Nút phẳng ở mọi bề rộng (docs/mobile-design-guide.md): bỏ bóng đổ của nút chính / mặc định / nguy hiểm

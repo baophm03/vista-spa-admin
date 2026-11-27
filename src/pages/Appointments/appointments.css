@@ -80,3 +80,112 @@
     color: inherit;
   }
 }
+
+/* ===== Drawer "Bộ lọc lịch": nền xám nhạt, mỗi nhóm (Ngày / Cơ sở / KTV / Trạng thái) là 1 thẻ trắng ===== */
+.appt-filter-drawer .ant-drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #FAFAF8;
+}
+.appt-filter-drawer .ant-drawer-header {
+  padding: 14px 16px;
+}
+.appt-filter-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.appt-filter-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+.appt-filter-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #fff;
+}
+.appt-filter-card h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #302938;
+}
+.appt-filter-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.appt-filter-count {
+  font-size: 12px;
+  color: #746B80;
+  font-variant-numeric: tabular-nums;
+}
+/* Hàng chọn: cao 40px, chữ 14px cho dễ bấm */
+.appt-filter-option {
+  min-height: 40px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.appt-filter-scroll {
+  max-height: 248px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.appt-filter-staff-list {
+  display: grid;
+  gap: 2px;
+}
+.appt-filter-staff-list:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.appt-filter-check {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #302938;
+}
+.appt-filter-check:hover {
+  background: #FAFAF8;
+}
+.appt-filter-check-all {
+  padding-bottom: 6px;
+  border-bottom: 1px solid #EEEAF1;
+  border-radius: 0;
+}
+.appt-filter-check-all:hover {
+  background: none;
+}
+.appt-filter-swatch {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 3px;
+}
+.appt-filter-empty {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #746B80;
+}

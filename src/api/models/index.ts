@@ -835,6 +835,7 @@ export * from './postAppointmentsIdStartAdmin200';
 export * from './postAppointmentsIdStartAdmin200AllOf';
 export * from './postAuthLoginBody';
 export * from './postAuthRefreshTokenBody';
+export * from './postAuthZaloAvatarBody';
 export * from './postAuthZaloBody';
 export * from './postAuthZaloLoginBody';
 export * from './postAuthZaloRegisterBody';

@@ -16,12 +16,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  InternalErrorResponse,
   LegacyBadRequestResponse,
   PostAuthLoginBody,
   PostAuthRefreshTokenBody,
+  PostAuthZaloAvatarBody,
   PostAuthZaloLoginBody,
   PostAuthZaloRegisterBody,
-  Response
+  Response,
+  UnauthorizedResponse
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -157,6 +160,71 @@ export const usePostAuthZaloLogin = <TError = void | LegacyBadRequestResponse,
       > => {
 
       const mutationOptions = getPostAuthZaloLoginMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/auth/zalo-avatar` — Mini App gọi sau khi user cấp quyền tên + ảnh đại diện. BE verify `access_token` với Zalo (graph /me) rồi lưu `zalo_avatar` cho tài khoản đang đăng nhập (zalo_id phải khớp). Cần đăng nhập.
+ * @summary Sync Zalo avatar of the logged-in user
+ */
+export const postAuthZaloAvatar = (
+    postAuthZaloAvatarBody: PostAuthZaloAvatarBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/auth/zalo-avatar`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAuthZaloAvatarBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAuthZaloAvatarMutationOptions = <TError = LegacyBadRequestResponse | UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloAvatar>>, TError,{data: PostAuthZaloAvatarBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloAvatar>>, TError,{data: PostAuthZaloAvatarBody}, TContext> => {
+
+const mutationKey = ['postAuthZaloAvatar'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthZaloAvatar>>, {data: PostAuthZaloAvatarBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAuthZaloAvatar(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthZaloAvatarMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthZaloAvatar>>>
+    export type PostAuthZaloAvatarMutationBody = PostAuthZaloAvatarBody
+    export type PostAuthZaloAvatarMutationError = LegacyBadRequestResponse | UnauthorizedResponse | InternalErrorResponse
+
+    /**
+ * @summary Sync Zalo avatar of the logged-in user
+ */
+export const usePostAuthZaloAvatar = <TError = LegacyBadRequestResponse | UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloAvatar>>, TError,{data: PostAuthZaloAvatarBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthZaloAvatar>>,
+        TError,
+        {data: PostAuthZaloAvatarBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAuthZaloAvatarMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

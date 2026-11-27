@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import {
   Alert,
   Button,
-  Form,
   Input,
   Select,
   Table,
@@ -13,9 +12,9 @@ import {
 } from 'antd'
 import {
   FileAddOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
-import dayjs from 'dayjs'
-import type { Dayjs } from 'dayjs'
+import { useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -24,31 +23,27 @@ import TableEmpty from '@/components/base/TableEmpty'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { GetHealthRecordsAdminParams } from '@/api/models/getHealthRecordsAdminParams'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
-import { getUsersCustomersIdHealthRecordsAdmin, getHealthRecordsAdmin, postUsersCustomersIdHealthRecordsAdmin, putUsersCustomersIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customers'
+import { getUsersCustomersIdHealthRecordsAdmin, getHealthRecordsAdmin } from '@/api/endpoints/customers'
 import { getTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
 import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
 import { getSkinTypesAdmin } from '@/api/endpoints/skin-types'
 import { getTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
-import { getUsersAdmin } from '@/api/endpoints/users'
 import { errorMessage, pickData } from '@/api/helpers'
-import HealthRecordDrawer from './components/HealthRecordDrawer'
-import HealthRecordModal from './components/HealthRecordModal'
+import HealthRecordDetailModal from './components/HealthRecordDetailModal'
+import useHealthRecordForm from './components/useHealthRecordForm'
 import {
   currentHealth,
   DEFAULT_SKIN_TYPE_FILTER_OPTIONS,
   displayDate,
-  skinTypeCode,
   skinTypeLabel,
-  type ExaminerOption,
   type HealthRow,
   type ServiceHistoryAppointment,
   type SkinTypeOption,
 } from './components/constants'
-import type { Branch } from '@/api/models'
-import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import './health-records.css'
 
 export default function HealthRecords() {
+  const canCreateRecord = useAbility().can('UPDATE', 'CUSTOMER')
   const [rows, setRows] = useState<HealthRow[]>([])
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
@@ -66,16 +61,8 @@ export default function HealthRecords() {
   const [detailTreatments, setDetailTreatments] = useState<CustomerTreatment[]>([])
   const [detailAppointments, setDetailAppointments] = useState<ServiceHistoryAppointment[]>([])
   const [packageNames, setPackageNames] = useState<Record<string, string>>({})
-  const [staffs, setStaffs] = useState<ExaminerOption[]>([])
   const [skinTypes, setSkinTypes] = useState<SkinTypeOption[]>([])
   const [skinTypesLoading, setSkinTypesLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [recordCustomer, setRecordCustomer] = useState<HealthRow | null>(null)
-  const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [form] = Form.useForm()
-  const branchesQuery = useGetBranchesAdmin()
-  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const load = useCallback(async (nextPage = page, search = keyword): Promise<HealthRow[] | null> => {
     const request = ++listRequest.current
@@ -113,33 +100,6 @@ export default function HealthRecords() {
   }, [load])
 
   useEffect(() => {
-    const loadExaminerOptions = async () => {
-      const result = await getUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
-      const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { code?: string | null; role_name?: string | null } | null }> }> }>(result)?.rows ?? [])
-      const ktvUsers = userRows.filter((user) =>
-        (user.user_roles ?? []).some((assignment) => {
-          const normalized = (value: string | null | undefined) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi')
-          const roleCode = normalized(assignment.role?.code)
-          const roleName = normalized(assignment.role?.role_name)
-          // Code 'staff' là chuẩn hiện tại (role cũ từng là 'ktv'); role_name dự phòng ('Kỹ thuật viên / Chuyên viên')
-          return roleCode === 'staff' || roleCode === 'ktv' || roleName === 'ktv' || roleName.includes('chuyen vien') || roleName.includes('ky thuat vien')
-        }),
-      )
-
-      // Phiếu khám lưu tên người khám dạng văn bản, nên gộp các tài khoản KTV trùng tên.
-      const uniqueNames = new Map<string, ExaminerOption>()
-      for (const staff of ktvUsers) {
-        const name = (staff.zalo_name || staff.email || '').trim()
-        if (!name) continue
-        const normalizedName = name.toLocaleLowerCase('vi')
-        if (!uniqueNames.has(normalizedName)) uniqueNames.set(normalizedName, { id: staff.id, zalo_name: staff.zalo_name, email: staff.email })
-      }
-      setStaffs([...uniqueNames.values()].sort((a, b) =>
-        (a.zalo_name || a.email || '').localeCompare(b.zalo_name || b.email || '', 'vi'),
-      ))
-    }
-
-    void loadExaminerOptions()
     getSkinTypesAdmin()
       .then((body) => setSkinTypes(pickData<SkinTypeOption[]>(body) ?? []))
       .catch((err) => message.error(`Không tải được danh mục loại da: ${errorMessage(err)}`))
@@ -191,64 +151,18 @@ export default function HealthRecords() {
     setPage(1)
   }
 
-  const openRecordForm = (row: HealthRow, record?: CustomerHealthRecord) => {
-    setRecordCustomer(row)
-    setEditingRecord(record ?? null)
-    form.resetFields()
-    form.setFieldsValue({
-      checked_date: record?.checked_date ? dayjs(record.checked_date) : dayjs(),
-      checked_by: record?.checked_by ?? undefined,
-      medical_history: record?.medical_history ?? undefined,
-      skin_type: skinTypeCode(record?.skin_type, skinTypes),
-      condition: record?.condition ?? undefined,
-      allergies: record?.allergies ?? undefined,
-      protocol: record?.protocol ?? undefined,
-      products_used: record?.products_used ?? undefined,
-      advice: record?.advice ?? undefined,
-      note: record?.note ?? undefined,
-      branch_id: (record as { branch_id?: string } | null)?.branch_id ?? undefined,
-    })
-    setModalOpen(true)
-  }
-
-  const submit = async () => {
-    const values = (await form.validateFields()) as Record<string, Dayjs | string | undefined>
-    if (!recordCustomer) return
-    const dto = {
-      checked_date: (values.checked_date as Dayjs).format('YYYY-MM-DD'),
-      checked_by: (values.checked_by as string) || null,
-      medical_history: (values.medical_history as string) || null,
-      skin_type: (values.skin_type as string) || null,
-      condition: String(values.condition ?? '').trim(),
-      allergies: (values.allergies as string) || null,
-      protocol: (values.protocol as string) || null,
-      products_used: (values.products_used as string) || null,
-      advice: (values.advice as string) || null,
-      note: (values.note as string) || null,
-      branch_id: (values.branch_id as string) || null,
-    }
-    setSaving(true)
-    try {
-      if (editingRecord) {
-        await putUsersCustomersIdHealthRecordsRecordIdAdmin(recordCustomer.id, editingRecord.id, dto as never)
-        message.success('Đã cập nhật phiếu khám')
-      } else {
-        await postUsersCustomersIdHealthRecordsAdmin(recordCustomer.id, dto as never)
-        message.success('Đã tạo phiếu khám')
-      }
-      setModalOpen(false)
+  const { openForm: openRecordForm, modal: recordModal } = useHealthRecordForm({
+    skinTypes,
+    skinTypesLoading,
+    onSaved: async (customerId) => {
       const nextRows = await load()
-      if (detail && detail.id === recordCustomer.id) {
+      if (detail && detail.id === customerId) {
         setDetail(nextRows?.find((row) => row.id === detail.id) ?? detail)
       } else if (detail) {
         setDetailRefresh((value) => value + 1)
       }
-    } catch (err) {
-      message.error(errorMessage(err))
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+  })
 
   return (
     <>
@@ -259,7 +173,7 @@ export default function HealthRecords() {
         Sổ sức khỏe
       </PageTitle>
       {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, bộ lọc loại da 1 hàng */}
-      <div className="health-record-toolbar toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(220px,320px)_170px] lg:justify-end">
+      <div className={`health-record-toolbar toolbar-row mb-3 grid grid-cols-1 gap-2 ${canCreateRecord ? 'md:grid-cols-[minmax(0,1fr)_170px_auto] lg:grid-cols-[minmax(220px,320px)_170px_auto]' : 'md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(220px,320px)_170px]'} lg:justify-end`}>
           <Input.Search
             aria-label="Tìm hồ sơ sức khỏe"
             allowClear
@@ -269,6 +183,7 @@ export default function HealthRecords() {
             onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
             onSearch={(v) => applySearch(v)}
           />
+          <div className={`grid gap-2 md:contents ${canCreateRecord ? 'grid-cols-[minmax(0,1fr)_44px]' : 'grid-cols-1'}`}>
           <Select
             allowClear
             aria-label="Lọc theo loại da"
@@ -281,6 +196,13 @@ export default function HealthRecords() {
               : DEFAULT_SKIN_TYPE_FILTER_OPTIONS}
             onChange={(value) => { setSkinFilter(value); setPage(1) }}
           />
+          {/* Tạo phiếu cho khách bất kỳ (kể cả khách chưa có sổ) — form có ô chọn khách hàng */}
+          {canCreateRecord && (
+            <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo phiếu khám" onClick={() => openRecordForm(null)}>
+              Tạo phiếu khám
+            </Button>
+          )}
+          </div>
       </div>
 
       {listError && (
@@ -390,7 +312,7 @@ export default function HealthRecords() {
       />}
       {!loading && !listError && <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="hồ sơ sức khỏe" />}
 
-      <HealthRecordDrawer
+      <HealthRecordDetailModal
         detail={detail}
         onClose={() => setDetail(null)}
         onOpenRecordForm={openRecordForm}
@@ -404,19 +326,7 @@ export default function HealthRecords() {
         detailAppointments={detailAppointments}
       />
 
-      <HealthRecordModal
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onSubmit={() => void submit()}
-        saving={saving}
-        editingRecord={editingRecord}
-        recordCustomer={recordCustomer}
-        form={form}
-        staffs={staffs}
-        skinTypes={skinTypes}
-        skinTypesLoading={skinTypesLoading}
-        branches={branches}
-      />
+      {recordModal}
     </>
   )
 }

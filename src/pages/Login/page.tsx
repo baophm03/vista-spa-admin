@@ -167,14 +167,14 @@ export default function Login() {
           <button
             type="submit"
             disabled={loginMutation.isPending}
-            className="mt-1.5 h-[50px] w-full cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--brand-primary),var(--brand-dark))] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_8px_20px_rgba(var(--brand-dark-rgb),0.35)] transition hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(var(--brand-dark-rgb),0.45)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
+            className="mt-1.5 h-[50px] w-full cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--brand-primary),var(--brand-dark))] text-[15px] font-semibold tracking-[0.02em] text-white transition hover:-translate-y-px active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
           >
             {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
 
         <div className="mt-7 border-t border-[var(--brand-border-soft)] pt-5 text-center text-[11px] text-[#b3adbd]">
-          © 2026 {brand.name} — CTCP Việt Phụng
+          © 2026 {brand.name} - CTCP Việt Phụng
         </div>
       </aside>
     </div>

@@ -26,7 +26,8 @@ import useDesktopLayout from '@/hooks/useDesktopLayout'
 
 const CustomerQrScannerModal = lazy(() => import('./components/CustomerQrScannerModal'))
 import CustomerAvatar from './components/CustomerAvatar'
-import CustomerDetailDrawer from './components/CustomerDetailDrawer'
+import { isCustomerLinked } from './components/customerAccount'
+import CustomerDetailModal from './components/CustomerDetailModal'
 import './customers.css'
 import CustomerProfileFormModal from './components/CustomerProfileFormModal'
 
@@ -37,7 +38,7 @@ const CUSTOMER_COLUMN_OPTIONS: { label: string; value: CustomerColumnKey }[] = [
   { label: 'Tên khách hàng', value: 'full_name' },
   { label: 'Số điện thoại', value: 'phone' },
   { label: 'Email', value: 'email' },
-  { label: 'Hạng / Tài khoản', value: 'rank' },
+  { label: 'Tài khoản Zalo', value: 'rank' },
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_COLUMN_OPTIONS.map((column) => column.value)
@@ -287,7 +288,6 @@ export default function Customers() {
     }
   }
 
-  const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
 
   const renderFilterPopover = (trigger?: React.ReactNode) => (
@@ -454,12 +454,14 @@ export default function Customers() {
           { key: 'phone', title: 'Số điện thoại', dataIndex: 'phone', width: 120 },
           { key: 'email', title: 'Email', dataIndex: 'email', width: 190, render: (value: string | undefined, row: CustomerProfileRow) => value || row.user?.email || '—' },
           {
-            title: 'Hạng / Tài khoản',
+            title: 'Tài khoản Zalo',
             key: 'rank',
             width: 120,
-            render: (_: unknown, row: CustomerProfileRow) => row.user_id
-              ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
-              : <Tag>Chưa liên kết</Tag>,
+            render: (_: unknown, row: CustomerProfileRow) => (
+              isCustomerLinked(row)
+                ? <Tag color="green" className="me-0!">Đã liên kết</Tag>
+                : <Tag className="me-0!">Chưa liên kết</Tag>
+            ),
           },
           {
             key: 'actions',
@@ -523,8 +525,8 @@ export default function Customers() {
               {visibleColumns.includes('phone') && <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />}
               {visibleColumns.includes('email') && <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />}
               {visibleColumns.includes('rank') && <MobileCardRow
-                label="Hạng / Tài khoản"
-                value={`${rowRankName(row) ?? '—'} / ${row.user_id ? 'Đã liên kết' : 'Chưa liên kết'}`}
+                label="Tài khoản Zalo"
+                value={isCustomerLinked(row) ? 'Đã liên kết' : 'Chưa liên kết'}
               />}
             </div>
             {(profileAccess.canManage || profileAccess.canDelete) && (
@@ -547,12 +549,13 @@ export default function Customers() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />
 
-      <CustomerDetailDrawer
+      <CustomerDetailModal
         selected={selected}
         summary={summary}
         profileFieldDefs={profileFieldDefs}
         onClose={() => setSelected(null)}
         onMembershipUpdated={refreshSelected}
+        onEdit={profileAccess.canManage ? (profile) => void openModal(profile) : undefined}
       />
 
 

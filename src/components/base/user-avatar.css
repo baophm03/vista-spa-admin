@@ -1,0 +1,72 @@
+/* AvatarEditor: [ảnh hệ thống + nút đổi/gỡ] [ảnh Zalo nhỏ hơn bên cạnh] */
+.avatar-editor {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.avatar-editor-main {
+  position: relative;
+  flex: none;
+}
+.avatar-editor-pick {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.avatar-editor-pick:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+.avatar-editor-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--brand-primary);
+  color: #fff;
+  font-size: 11px;
+}
+.avatar-editor-badge .ant-spin-dot {
+  font-size: 12px;
+}
+.avatar-editor-badge .ant-spin-dot-item {
+  background-color: #fff;
+}
+.avatar-editor-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #746B80;
+  color: #fff;
+  font-size: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.avatar-editor-main:hover .avatar-editor-remove,
+.avatar-editor-remove:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .avatar-editor-remove {
+    opacity: 1;
+  }
+}

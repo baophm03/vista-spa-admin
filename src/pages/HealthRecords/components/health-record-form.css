@@ -1,0 +1,40 @@
+/* Form tạo / sửa phiếu khám (HealthRecordModal) — mở từ /health-records và từ chi tiết khách hàng */
+@media (max-width: 767px) {
+  .ant-modal .health-record-form .ant-form-item-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .health-record-form .ant-form-item-row > .ant-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+}
+
+/* Chỉ số đo: [Chỉ số][Giá trị][Đơn vị][Xóa] — mobile: chỉ số 1 hàng, giá trị + đơn vị + xóa hàng dưới */
+.health-record-metric-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 96px 40px;
+  gap: 8px;
+  align-items: start;
+}
+.health-record-metric-row > .ant-btn {
+  margin-top: 4px;
+}
+.health-record-metric-row .ant-form-item {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 767px) {
+  .health-record-metric-row {
+    grid-template-columns: minmax(0, 1fr) 88px 44px;
+    padding-bottom: 4px;
+  }
+  .health-record-metric-row > .health-record-metric-code {
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
+  }
+  .health-record-metric-row > .ant-btn {
+    margin-top: 0;
+  }
+}

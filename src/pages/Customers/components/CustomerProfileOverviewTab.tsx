@@ -1,6 +1,9 @@
 import CustomerRankCard from './CustomerRankCard'
 import { useMemo, useState } from 'react'
-import { Button, Card, Descriptions, Form, Input, InputNumber, Modal, Select, Space, Tag, message } from 'antd'
+import { Button, Form, Input, InputNumber, Modal, Select, Skeleton, message } from 'antd'
+import { EditOutlined } from '@ant-design/icons'
+import { DetailCard, DetailChip, DetailField, DetailHero, DetailNote } from '@/components/base/DetailModal'
+import { customerAccountLabel, customerRankName } from './customerAccount'
 import dayjs from 'dayjs'
 import type { Customer } from '@/api/models/customer'
 import type { CardRank } from '@/api/models/cardRank'
@@ -13,6 +16,16 @@ import { errorMessage } from '@/api/helpers'
 
 /** Hồ sơ khách hàng kèm dữ liệu user được include từ backend. */
 export interface CustomerProfileRow extends Customer {
+  /** Ảnh hệ thống (users.photo_file_id) — BE include kèm list/detail */
+  photo_file_id?: string | null
+  photo_file?: { id?: string; path?: string | null } | null
+  /** Ảnh Zalo lưu khi khách cấp quyền trên Mini App */
+  zalo_avatar?: string | null
+  /** Có zalo_id = khách đã liên kết tài khoản Zalo (đăng nhập Mini App) */
+  zalo_id?: string | null
+  zalo_name?: string | null
+  /** Hạng thành viên — BE include trực tiếp trên hồ sơ */
+  membership?: { card_rank?: { name?: string } | null } | null
   user?: {
     id?: string
     email?: string | null
@@ -58,9 +71,10 @@ interface Props {
   summary: CustomerProfileSummary | null
   fieldDefinitions: CustomFieldDefWithOptions[]
   onMembershipUpdated?: () => Promise<void> | void
+  onEdit?: (profile: CustomerProfileRow) => void
 }
 
-export default function CustomerProfileOverviewTab({ profile, summary, fieldDefinitions, onMembershipUpdated }: Props) {
+export default function CustomerProfileOverviewTab({ profile, summary, fieldDefinitions, onMembershipUpdated, onEdit }: Props) {
   const { format: money } = useBrandCurrency()
   const labels = useMemo(() => new Map(fieldDefinitions.map((definition) => [definition.key, definition.label])), [fieldDefinitions])
   const [adjustOpen, setAdjustOpen] = useState(false)
@@ -113,67 +127,91 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
     }
   }
 
-  const rankName = membership?.card_rank?.name || summary?.rank?.name || profile.user?.membership?.card_rank?.name
+  const rankName = membership?.card_rank?.name || summary?.rank?.name || customerRankName(profile)
+
+  const debt = Number(summary?.debt_amount ?? 0)
+  const points = Number(membership?.lifetime_points ?? summary?.points ?? 0)
+  const customFields = Object.entries(profile.custom_fields ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '')
 
   return (
-    <div className="grid gap-[18px] pt-2">
-      <Card
-        title="Hội viên & thẻ hạng"
-        extra={<Tag color="purple" className="me-0!">{rankName || 'Chưa có hạng'}</Tag>}
-        loading={!summary}
-      >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-          <CustomerRankCard
-            rankName={rankName}
-            imageFile={(rankRows.find((rank) => rank.id === membership?.card_rank_id) as any)?.image_file ?? null}
-            achievedAt={membership?.rank_achieved_at}
-            expiresAt={membership?.rank_expires_at}
-          />
-          <div className="min-w-[min(100%,18rem)] flex-1">
-            <Descriptions size="small" layout="vertical" colon={false} column={{ xs: 1, sm: 2, lg: 2 }}>
-              <Descriptions.Item label="Chi tiêu trong năm">{money(membership?.year_spent ?? 0)}</Descriptions.Item>
-              <Descriptions.Item label="Điểm khả dụng">{Number(membership?.lifetime_points ?? summary?.points ?? 0).toLocaleString('vi-VN')}</Descriptions.Item>
-              <Descriptions.Item label="Ngày đạt hạng">{membership?.rank_achieved_at ? dayjs(membership.rank_achieved_at).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
-              <Descriptions.Item label="Hiệu lực">{membership?.card_rank?.validity === 'PERMANENT' ? 'Vĩnh viễn' : membership?.rank_expires_at ? `Đến ${dayjs(membership.rank_expires_at).format('DD/MM/YYYY')}` : '—'}</Descriptions.Item>
-            </Descriptions>
-          </div>
-        </div>
-        {membership?.card_rank?.benefits && <div className="mb-3 text-sm text-gray-600">{membership.card_rank.benefits}</div>}
-        <Space wrap className="mt-2! w-full border-t border-slate-100 pt-3">
-          <Can I="POINTS_ADJUST" a="MEMBERSHIP">
-            <Button onClick={() => { adjustForm.resetFields(); adjustForm.setFieldsValue({ reason: '' }); setAdjustOpen(true) }}>Điều chỉnh điểm</Button>
-          </Can>
-          <Can I="RANK_OVERRIDE" a="MEMBERSHIP">
-            <Button onClick={() => { rankForm.resetFields(); setRankOpen(true) }}>Gán hạng thủ công</Button>
-          </Can>
-          <Can I="RECALCULATE" a="MEMBERSHIP">
-            <Button loading={recalculateMutation.isPending} onClick={() => void recalculate()}>Tính lại hạng</Button>
-          </Can>
-        </Space>
-      </Card>
+    <div className="dm-stack">
+      <DetailHero
+        caption="Tình trạng sử dụng"
+        title={summary ? `${summary.treatments.length} gói đang dùng` : '—'}
+        sub={summary ? (debt > 0 ? `Còn công nợ ${money(debt)}` : 'Không có công nợ') : 'Đang tải tổng hợp…'}
+        stats={[
+          {
+            label: 'Buổi còn lại',
+            value: !summary ? '–' : summary.remaining_sessions === null ? 'Không giới hạn' : Number(summary.remaining_sessions ?? 0).toLocaleString('vi-VN'),
+          },
+          { label: 'Giá trị còn lại', value: summary ? money(summary.remaining_value) : '–' },
+          { label: 'Công nợ', value: summary ? money(debt) : '–', tone: debt > 0 ? 'pending' : undefined },
+        ]}
+      />
 
-      <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
-        <Descriptions.Item label="Mã khách">{profile.customer_code}</Descriptions.Item>
-        <Descriptions.Item label="Hạng">{summary?.rank?.name || profile.user?.membership?.card_rank?.name || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Điểm">{summary ? summary.points.toLocaleString('vi-VN') : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Điện thoại">{profile.phone || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Email">{profile.email || profile.user?.email || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Ngày sinh">{profile.birthday ? dayjs(profile.birthday).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Tài khoản">{profile.user?.zalo_name || profile.user?.phone || (profile.user_id ? 'Đã liên kết' : 'Chưa liên kết')}</Descriptions.Item>
-        <Descriptions.Item label="Địa chỉ">{profile.address || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Ghi chú">{profile.note || '—'}</Descriptions.Item>
-        {Object.entries(profile.custom_fields ?? {}).map(([key, value]) => (
-          <Descriptions.Item key={key} label={labels.get(key) || (key === 'nghe_nghiep' ? 'Nghề nghiệp' : key)}>
-            {Array.isArray(value) ? value.join(', ') : String(value ?? '—')}
-          </Descriptions.Item>
-        ))}
-      </Descriptions>
-      <Space wrap>
-        <Tag color="blue">{summary ? summary.treatments.length + ' gói đang dùng' : 'Đang tải tổng hợp…'}</Tag>
-        <Tag color="green">{summary ? summary.remaining_sessions === null ? 'Buổi còn lại: không giới hạn' : 'Buổi còn lại: ' + Number(summary.remaining_sessions ?? 0).toLocaleString('vi-VN') : 'Buổi còn lại: —'}</Tag>
-        <Tag>Giá trị còn lại: {summary ? money(summary.remaining_value) : '—'}</Tag>
-        <Tag color={Number(summary?.debt_amount ?? 0) > 0 ? 'red' : 'default'}>Công nợ: {summary ? money(summary.debt_amount) : '—'}</Tag>
-      </Space>
+      <div className="dm-overview">
+        <DetailCard
+          title="Thông tin khách hàng"
+          extra={onEdit && (
+            <button type="button" className="dm-link" onClick={() => onEdit(profile)}>
+              <EditOutlined /> Chỉnh sửa
+            </button>
+          )}
+        >
+          <div className="dm-grid">
+            <DetailField label="Điện thoại" value={profile.phone && <a href={`tel:${profile.phone}`}>{profile.phone}</a>} emptyText="—" />
+            <DetailField label="Email" value={profile.email || profile.user?.email} emptyText="—" />
+            <DetailField label="Ngày sinh" value={profile.birthday ? dayjs(profile.birthday).format('DD/MM/YYYY') : undefined} emptyText="—" />
+            <DetailField label="Tài khoản Zalo" value={customerAccountLabel(profile)} />
+            {customFields.map(([key, value]) => (
+              <DetailField
+                key={key}
+                label={labels.get(key) || (key === 'nghe_nghiep' ? 'Nghề nghiệp' : key)}
+                value={Array.isArray(value) ? value.join(', ') : String(value)}
+              />
+            ))}
+            <DetailField wide label="Địa chỉ" value={profile.address} emptyText="—" />
+          </div>
+          {profile.note && <DetailNote title="Ghi chú">{profile.note}</DetailNote>}
+        </DetailCard>
+
+        <DetailCard title="Hội viên" extra={<DetailChip tone="primary">{rankName || 'Chưa có hạng'}</DetailChip>}>
+          {!summary ? <Skeleton active paragraph={{ rows: 4 }} /> : (
+            <>
+              <div className="dm-media">
+                <CustomerRankCard
+                  rankName={rankName}
+                  imageFile={(rankRows.find((rank) => rank.id === membership?.card_rank_id) as any)?.image_file ?? null}
+                  achievedAt={membership?.rank_achieved_at}
+                  expiresAt={membership?.rank_expires_at}
+                />
+              </div>
+              <div className="dm-grid">
+                <DetailField label="Ngày đạt hạng" value={membership?.rank_achieved_at ? dayjs(membership.rank_achieved_at).format('DD/MM/YYYY') : undefined} emptyText="—" />
+                <DetailField
+                  label="Hiệu lực"
+                  value={membership?.card_rank?.validity === 'PERMANENT' ? 'Vĩnh viễn' : membership?.rank_expires_at ? `Đến ${dayjs(membership.rank_expires_at).format('DD/MM/YYYY')}` : undefined}
+                  emptyText="—"
+                />
+                <DetailField label="Chi tiêu trong năm" value={<span className="dm-amount">{money(membership?.year_spent ?? 0)}</span>} />
+                <DetailField label="Điểm khả dụng" value={<span className="dm-amount">{points.toLocaleString('vi-VN')}</span>} />
+              </div>
+              {membership?.card_rank?.benefits && <DetailNote title="Quyền lợi">{membership.card_rank.benefits}</DetailNote>}
+            </>
+          )}
+          <div className="dm-card-actions">
+            <Can I="RECALCULATE" a="MEMBERSHIP">
+              <Button type="text" loading={recalculateMutation.isPending} onClick={() => void recalculate()}>Tính lại hạng</Button>
+            </Can>
+            <Can I="RANK_OVERRIDE" a="MEMBERSHIP">
+              <Button type="text" onClick={() => { rankForm.resetFields(); setRankOpen(true) }}>Gán hạng</Button>
+            </Can>
+            <Can I="POINTS_ADJUST" a="MEMBERSHIP">
+              <Button type="primary" onClick={() => { adjustForm.resetFields(); adjustForm.setFieldsValue({ reason: '' }); setAdjustOpen(true) }}>Điều chỉnh điểm</Button>
+            </Can>
+          </div>
+        </DetailCard>
+      </div>
 
       <Modal title="Điều chỉnh điểm hội viên" open={adjustOpen} confirmLoading={adjustMutation.isPending} onCancel={() => setAdjustOpen(false)} onOk={() => void savePoints()} okText="Lưu" cancelText="Hủy">
         <Form form={adjustForm} layout="vertical" className="mt-3">
@@ -193,7 +231,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
         </Form>
       </Modal>
 
-      <Modal title="Gán hạng thủ công" open={rankOpen} confirmLoading={overrideMutation.isPending} onCancel={() => setRankOpen(false)} onOk={() => void saveRank()} okText="Gán hạng" cancelText="Hủy">
+      <Modal title="Gán hạng" open={rankOpen} confirmLoading={overrideMutation.isPending} onCancel={() => setRankOpen(false)} onOk={() => void saveRank()} okText="Gán hạng" cancelText="Hủy">
         <Form form={rankForm} layout="vertical" className="mt-3">
           <Form.Item name="rank_id" label="Hạng thẻ" rules={[{ required: true, message: 'Chọn hạng thẻ' }]}>
             <Select options={activeRanks.map((rank) => ({ value: rank.id, label: rank.name }))} placeholder="Chọn hạng" />
